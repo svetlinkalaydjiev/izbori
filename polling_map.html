@@ -150,6 +150,11 @@ header h1 {
         <input type="range" id="slider-dhigh" min="50" max="500" step="25" value="200" oninput="onDhighSlider(this.value)">
         <span class="slider-val" id="dhigh-val">200 mi</span>
       </div>
+      <div class="slider-wrap">
+        <span>Capacity</span>
+        <input type="range" id="slider-cap" min="500" max="1000" step="50" value="800" oninput="onCapSlider(this.value)">
+        <span class="slider-val" id="cap-val">800</span>
+      </div>
     </div>
     <button class="toggle-btn rerun-btn" id="btn-rerun" onclick="rerunOptimization()">Rerun</button>
     <button class="toggle-btn" id="btn-2024" onclick="toggle2024(this)">Show 2024</button>
@@ -190,24 +195,25 @@ header h1 {
     <span class="stat-exp" id="st-expected">—</span>
   </div>
   <div class="stat-note">
-    Pool = 2026 applicants + est. 2024 active voters (×0.8) minus 90% overlap with 2026.
+    Pool = 2026 applicants + 100% of 2024 voters minus 90% overlap with 2026.
     Served = at open section or within full-travel distance.
     Far = between full-travel and max-travel (cosine decay zone).
-    Expected = probability-weighted sum across all voters.
+    Expected = capacity-limited (each open section serves at most the capacity limit).
     Pins show 2026 заявления counts only.
   </div>
 </div>
 
 <script>
 // ── Constants ──────────────────────────────────────────────────────────────────
-const RETENTION_2024 = 0.80;  // fraction of 2024 voters still active
+const RETENTION_2024 = 1.00;  // fraction of 2024 voters still active (assumed 100%)
 const OVERLAP_2026   = 0.90;  // fraction of 2026 applicants who were also 2024 voters
 const MIN_ZAV        = 40;    // minimum заявления to be eligible to open
 const TOP_N          = 20;    // max non-mandatory sections to open
 
 // ── State ──────────────────────────────────────────────────────────────────────
-let dLow      = 20;    // below this distance: 100% travel probability
-let dHigh     = 200;   // above this distance: 0% travel probability
+let dLow        = 20;    // below this distance: 100% travel probability
+let dHigh       = 200;   // above this distance: 0% travel probability
+let maxCapacity = 800;   // max voters served at a single open location
 let show2024  = false;
 let voterPool = null;  // all locations with combined voter counts
 let selected  = null;  // the 20 optimally chosen station objects
@@ -285,23 +291,32 @@ function optimizeSelections(pool) {
 
   // Precompute distance matrices to avoid repeated trig in the inner loop
   // distME[i][j] = dist from pool[i] to eligible[j]
+  // distMM[i][k] = dist from pool[i] to mandatory[k]
   const distME = pool.map(loc => eligible.map(e => distMiles(loc, e)));
-  // mandMin[i] = min dist from pool[i] to any mandatory station (baseline coverage)
-  const mandMin = pool.map(loc =>
-    mandatory.length ? Math.min(...mandatory.map(m => distMiles(loc, m))) : Infinity
-  );
+  const distMM = pool.map(loc => mandatory.map(m => distMiles(loc, m)));
+  const nM = mandatory.length;
 
-  // Score a selection expressed as index array into eligible[]
+  // Score a selection expressed as index array into eligible[].
+  // Assigns each pool location's expected arrivals to its nearest open station,
+  // then caps each station's total at maxCapacity.
   function score(selIdxs) {
-    let total = 0;
+    const nS = selIdxs.length;
+    const buckets = new Float64Array(nM + nS); // mandatory first, then selected
+
     for (let i = 0; i < pool.length; i++) {
-      let minD = mandMin[i];
-      for (const j of selIdxs) {
-        const d = distME[i][j];
-        if (d < minD) minD = d;
+      let minD = Infinity, bestB = 0;
+      for (let k = 0; k < nM; k++) {
+        if (distMM[i][k] < minD) { minD = distMM[i][k]; bestB = k; }
       }
-      total += pool[i].uniqueVoters * travelProb(minD);
+      for (let s = 0; s < nS; s++) {
+        const d = distME[i][selIdxs[s]];
+        if (d < minD) { minD = d; bestB = nM + s; }
+      }
+      buckets[bestB] += pool[i].uniqueVoters * travelProb(minD);
     }
+
+    let total = 0;
+    for (let b = 0; b < buckets.length; b++) total += Math.min(buckets[b], maxCapacity);
     return total;
   }
 
@@ -407,6 +422,25 @@ function popupHtml(s) {
   return `<div style="min-width:180px"><div class="popup-name">${s.name}</div>${badge}${body}</div>`;
 }
 
+// ── Capacity-capped expected voters reached ───────────────────────────────────
+// Assigns each pool location's expected arrivals to its nearest open station,
+// caps each station at maxCapacity, returns total served.
+function computeCappedExpected(pool, sel) {
+  const openSet = [...pool.filter(s => s.mandatory), ...sel];
+  const buckets = new Float64Array(openSet.length);
+  for (const loc of pool) {
+    let minD = Infinity, nearIdx = 0;
+    for (let k = 0; k < openSet.length; k++) {
+      const d = distMiles(loc, openSet[k]);
+      if (d < minD) { minD = d; nearIdx = k; }
+    }
+    buckets[nearIdx] += loc.uniqueVoters * travelProb(minD);
+  }
+  let total = 0;
+  for (const amt of buckets) total += Math.min(amt, maxCapacity);
+  return total;
+}
+
 // ── Render 2026 layer ─────────────────────────────────────────────────────────
 function render2026() {
   if (!voterPool || !selected) return;
@@ -414,7 +448,7 @@ function render2026() {
   const statused = computeStatuses(voterPool, selected);
 
   let nOpen = 0, nEmb = 0;
-  let uServed = 0, uAtrisk = 0, uLost = 0, uExpected = 0;
+  let uServed = 0, uAtrisk = 0, uLost = 0;
   const totalPool = voterPool.reduce((a, s) => a + s.uniqueVoters, 0);
 
   statused.forEach(s => {
@@ -428,13 +462,6 @@ function render2026() {
     else if (s.status === 'atrisk')      uAtrisk += s.uniqueVoters;
     else                                  uLost   += s.uniqueVoters;
 
-    // Probability-weighted expected turnout
-    if (atOpen || s.status === 'served') {
-      uExpected += s.uniqueVoters;
-    } else if (s.status === 'atrisk') {
-      uExpected += s.uniqueVoters * travelProb(s.nearestDistRaw);
-    }
-
     // Only render pins for locations that have 2026 заявления
     if (s.v26 > 0) {
       L.marker([s.lat, s.lng], { icon: pinIcon(s) })
@@ -442,6 +469,9 @@ function render2026() {
        .addTo(layer2026);
     }
   });
+
+  // Capacity-capped expected: each open station serves at most maxCapacity voters
+  const uExpected = computeCappedExpected(voterPool, selected);
 
   const fmt = n => Math.round(n).toLocaleString();
   const pct = n => ` (${Math.round(n / totalPool * 100)}%)`;
@@ -485,6 +515,12 @@ function onDhighSlider(val) {
   dHigh = Math.max(Number(val), dLow + 10);
   document.getElementById('dhigh-val').textContent = dHigh + ' mi';
   render2026();
+}
+
+function onCapSlider(val) {
+  maxCapacity = Number(val);
+  document.getElementById('cap-val').textContent = val;
+  render2026(); // updates stats immediately; click Rerun to re-optimise selection
 }
 
 function rerunOptimization() {
