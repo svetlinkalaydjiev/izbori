@@ -1,270 +1,405 @@
 {
-  "updated": "2026-03-22T18:29:26.274972+00:00",
+  "updated": "2026-03-22T20:03:40.708851+00:00",
   "total": 3112,
   "stations": [
     {
-      "name": "Atlantic City, New Jersey, EHT, Bulgarian School Читанка",
-      "count": 28
+      "name": "Des Plaines 3 IL",
+      "lat": 42.036,
+      "lng": -87.895,
+      "mandatory": false,
+      "voters": 191
     },
     {
-      "name": "Barnstable, MA",
-      "count": 7
+      "name": "Boston — Newton MA",
+      "lat": 42.3579,
+      "lng": -71.1843,
+      "mandatory": false,
+      "voters": 189
     },
     {
-      "name": "Boston",
-      "count": 189
+      "name": "Des Plaines 1 IL",
+      "lat": 42.0266,
+      "lng": -87.8935,
+      "mandatory": false,
+      "voters": 149
     },
     {
-      "name": "Broomall, Pa, Euro Market",
-      "count": 66
+      "name": "Mount Prospect IL",
+      "lat": 42.0445,
+      "lng": -87.942,
+      "mandatory": false,
+      "voters": 146
     },
     {
-      "name": "BULGARIAN LEARNING CENTER \"RODINA\"-ST. PETERSBURG FL, INC., 301 37TH AVE. N ST. PETERSBURG, FL",
-      "count": 13
+      "name": "St Petersburg FL",
+      "lat": 27.8569,
+      "lng": -82.6493,
+      "mandatory": false,
+      "voters": 135
     },
     {
-      "name": "Chesterfield MO",
-      "count": 3
+      "name": "Schaumburg (Magura) IL",
+      "lat": 42.0516,
+      "lng": -88.0497,
+      "mandatory": false,
+      "voters": 107
     },
     {
-      "name": "Denver, Colorado",
-      "count": 3
+      "name": "Atlanta (Marietta) GA",
+      "lat": 33.916,
+      "lng": -84.4673,
+      "mandatory": false,
+      "voters": 103
     },
     {
-      "name": "Las Vegas, Nevada, Restaurant BESO",
-      "count": 90
+      "name": "Fort Lauderdale (Miami) FL",
+      "lat": 26.1697,
+      "lng": -80.0996,
+      "mandatory": false,
+      "voters": 100
     },
     {
-      "name": "Marietta, GA - MALINCHO Fresh Market, Atlanta, GA",
-      "count": 91
+      "name": "Charlotte (Matthews) NC",
+      "lat": 35.1448,
+      "lng": -80.719,
+      "mandatory": false,
+      "voters": 96
     },
     {
-      "name": "Myrtle Beach",
-      "count": 2
+      "name": "Las Vegas NV",
+      "lat": 36.1084,
+      "lng": -115.2616,
+      "mandatory": false,
+      "voters": 90
+    },
+    {
+      "name": "Cincinnati OH",
+      "lat": 39.1839,
+      "lng": -84.4235,
+      "mandatory": false,
+      "voters": 89
+    },
+    {
+      "name": "Seattle (Edmonds) WA",
+      "lat": 47.7949,
+      "lng": -122.3737,
+      "mandatory": false,
+      "voters": 88
+    },
+    {
+      "name": "Embassy — Washington DC",
+      "lat": 38.9124,
+      "lng": -77.0485,
+      "mandatory": true,
+      "voters": 83
+    },
+    {
+      "name": "New York — Consulate NY",
+      "lat": 40.7646,
+      "lng": -73.9675,
+      "mandatory": true,
+      "voters": 81
+    },
+    {
+      "name": "Denver CO",
+      "lat": 39.6913,
+      "lng": -104.94,
+      "mandatory": false,
+      "voters": 75
+    },
+    {
+      "name": "Sunnyvale (San Jose) CA",
+      "lat": 37.3499,
+      "lng": -122.0576,
+      "mandatory": false,
+      "voters": 71
+    },
+    {
+      "name": "Dallas TX",
+      "lat": 32.9278,
+      "lng": -96.8967,
+      "mandatory": false,
+      "voters": 70
+    },
+    {
+      "name": "Pittsburgh (W Homestead) PA",
+      "lat": 40.4018,
+      "lng": -79.9178,
+      "mandatory": false,
+      "voters": 70
+    },
+    {
+      "name": "Philadelphia (Broomall) PA",
+      "lat": 39.981,
+      "lng": -75.3617,
+      "mandatory": false,
+      "voters": 66
+    },
+    {
+      "name": "New Brunswick NJ",
+      "lat": 40.4958,
+      "lng": -74.4447,
+      "mandatory": false,
+      "voters": 63
+    },
+    {
+      "name": "Minneapolis (Woodbury) MN",
+      "lat": 44.9228,
+      "lng": -92.9696,
+      "mandatory": false,
+      "voters": 63
+    },
+    {
+      "name": "Concord (Martinez) CA",
+      "lat": 38.0143,
+      "lng": -122.1181,
+      "mandatory": false,
+      "voters": 59
+    },
+    {
+      "name": "Phoenix AZ",
+      "lat": 33.4873,
+      "lng": -112.027,
+      "mandatory": false,
+      "voters": 57
+    },
+    {
+      "name": "San Diego CA",
+      "lat": 32.8976,
+      "lng": -117.1246,
+      "mandatory": false,
+      "voters": 56
+    },
+    {
+      "name": "Sacramento CA",
+      "lat": 38.5884,
+      "lng": -121.4195,
+      "mandatory": false,
+      "voters": 54
+    },
+    {
+      "name": "Houston TX",
+      "lat": 29.766,
+      "lng": -95.3777,
+      "mandatory": false,
+      "voters": 53
+    },
+    {
+      "name": "Hyannis / Cape Cod MA",
+      "lat": 41.7037,
+      "lng": -70.3086,
+      "mandatory": false,
+      "voters": 52
+    },
+    {
+      "name": "Boston — Billerica MA",
+      "lat": 42.5612,
+      "lng": -71.2961,
+      "mandatory": false,
+      "voters": 49
+    },
+    {
+      "name": "New York — Queens NY",
+      "lat": 40.7334,
+      "lng": -73.8627,
+      "mandatory": false,
+      "voters": 48
+    },
+    {
+      "name": "Norwalk (Southport) CT",
+      "lat": 41.1403,
+      "lng": -73.2848,
+      "mandatory": false,
+      "voters": 48
+    },
+    {
+      "name": "San Francisco CA",
+      "lat": 37.7623,
+      "lng": -122.4713,
+      "mandatory": false,
+      "voters": 46
+    },
+    {
+      "name": "Nashville TN",
+      "lat": 36.1583,
+      "lng": -86.7742,
+      "mandatory": false,
+      "voters": 46
+    },
+    {
+      "name": "Los Angeles — Consulate CA",
+      "lat": 34.0479,
+      "lng": -118.462,
+      "mandatory": true,
+      "voters": 45
+    },
+    {
+      "name": "St Louis (Ellisville) MO",
+      "lat": 38.6009,
+      "lng": -90.5863,
+      "mandatory": false,
+      "voters": 44
+    },
+    {
+      "name": "Naples FL",
+      "lat": 26.2093,
+      "lng": -81.8016,
+      "mandatory": false,
+      "voters": 42
+    },
+    {
+      "name": "Richmond VA",
+      "lat": 37.6151,
+      "lng": -77.4919,
+      "mandatory": false,
+      "voters": 40
+    },
+    {
+      "name": "Austin TX",
+      "lat": 30.4152,
+      "lng": -97.7441,
+      "mandatory": false,
+      "voters": 33
+    },
+    {
+      "name": "Atlantic City area NJ",
+      "lat": 39.3817,
+      "lng": -74.6072,
+      "mandatory": false,
+      "voters": 28
+    },
+    {
+      "name": "Virginia Beach VA",
+      "lat": 36.845,
+      "lng": -75.9921,
+      "mandatory": false,
+      "voters": 21
+    },
+    {
+      "name": "Nantucket MA",
+      "lat": 41.2855,
+      "lng": -70.1013,
+      "mandatory": false,
+      "voters": 20
+    },
+    {
+      "name": "Salt Lake City UT",
+      "lat": 40.7578,
+      "lng": -111.892,
+      "mandatory": false,
+      "voters": 20
+    },
+    {
+      "name": "Portland OR",
+      "lat": 45.5625,
+      "lng": -122.6892,
+      "mandatory": false,
+      "voters": 15
+    },
+    {
+      "name": "Chicago — Consulate IL",
+      "lat": 41.896,
+      "lng": -87.6238,
+      "mandatory": true,
+      "voters": 15
+    },
+    {
+      "name": "Altamonte Springs (Orlando) FL",
+      "lat": 28.653,
+      "lng": -81.4308,
+      "mandatory": false,
+      "voters": 13
+    },
+    {
+      "name": "Irvine (Tustin) CA",
+      "lat": 33.7211,
+      "lng": -117.8066,
+      "mandatory": false,
+      "voters": 13
+    },
+    {
+      "name": "Chicago — St. Ivan Rilski IL",
+      "lat": 41.9636,
+      "lng": -87.7737,
+      "mandatory": false,
+      "voters": 13
+    },
+    {
+      "name": "Jacksonville FL",
+      "lat": 30.18,
+      "lng": -81.6305,
+      "mandatory": false,
+      "voters": 10
+    },
+    {
+      "name": "Indianapolis IN",
+      "lat": 39.7872,
+      "lng": -86.2095,
+      "mandatory": false,
+      "voters": 9
+    },
+    {
+      "name": "Newark DE",
+      "lat": 39.6837,
+      "lng": -75.7497,
+      "mandatory": false,
+      "voters": 9
+    },
+    {
+      "name": "Detroit (Troy) MI",
+      "lat": 42.5642,
+      "lng": -83.1189,
+      "mandatory": false,
+      "voters": 7
+    },
+    {
+      "name": "Hinsdale IL",
+      "lat": 41.7938,
+      "lng": -87.936,
+      "mandatory": false,
+      "voters": 6
     },
     {
       "name": "Myrtle Beach SC",
-      "count": 3
+      "lat": 33.6891,
+      "lng": -78.8867,
+      "mandatory": false,
+      "voters": 5
     },
     {
-      "name": "Newark, Delaware",
-      "count": 9
+      "name": "Buffalo (Tonawanda) NY",
+      "lat": 43.017,
+      "lng": -78.8824,
+      "mandatory": false,
+      "voters": 3
     },
     {
-      "name": "Queens New York",
-      "count": 48
+      "name": "Chesterfield MO",
+      "lat": 38.6631,
+      "lng": -90.5771,
+      "mandatory": false,
+      "voters": 3
     },
     {
-      "name": "Raleigh, NC",
-      "count": 3
+      "name": "Raleigh NC",
+      "lat": 35.7796,
+      "lng": -78.6382,
+      "mandatory": false,
+      "voters": 3
     },
     {
-      "name": "Roanoke, VA",
-      "count": 1
+      "name": "Roanoke VA",
+      "lat": 37.271,
+      "lng": -79.9414,
+      "mandatory": false,
+      "voters": 1
     },
     {
-      "name": "Saint Petersburg ABRITUS MINI MARKET, Saint Petersburg Florida",
-      "count": 86
-    },
-    {
-      "name": "San Diego, California, Mira Mesa",
-      "count": 56
-    },
-    {
-      "name": "San Francisco, CA",
-      "count": 46
-    },
-    {
-      "name": "Sunnyvale",
-      "count": 71
-    },
-    {
-      "name": "Ukrainian American Club of Southport, 279 King Drive, Southport, CT",
-      "count": 1
-    },
-    {
-      "name": "Алтамонт, Флорида,Храм \"Свети Георги\",, Алтамонт, район Орландо Флорида",
-      "count": 13
-    },
-    {
-      "name": "Алфа Арт галерия Ню Бронсуик, Ню Джърси",
-      "count": 63
-    },
-    {
-      "name": "Билирика, 310 River St, Billerica, MA USA",
-      "count": 42
-    },
-    {
-      "name": "Билирика, MA, 310 River Street, Billerica, MA",
-      "count": 7
-    },
-    {
-      "name": "Българска Православна Църква Свети \" Иван Рилски\", Чикаго",
-      "count": 13
-    },
-    {
-      "name": "Бъфало Ню Йорк",
-      "count": 3
-    },
-    {
-      "name": "Вашингтон (Посолство)",
-      "count": 83
-    },
-    {
-      "name": "Вирджиния Бийч, Вирджиния",
-      "count": 21
-    },
-    {
-      "name": "Далас, Тексас, Далас, Тексас",
-      "count": 70
-    },
-    {
-      "name": "Денвър",
-      "count": 72
-    },
-    {
-      "name": "Дес Плейнс ,МАГАЗИН МАЛИНЧО,Илинойс,САЩ",
-      "count": 149
-    },
-    {
-      "name": "Дес Плейнс, Център \"Малката България\"",
-      "count": 191
-    },
-    {
-      "name": "Детройт",
-      "count": 7
-    },
-    {
-      "name": "Джаксънвил, Флорида",
-      "count": 10
-    },
-    {
-      "name": "Индианаполис, Индиана, САЩ",
-      "count": 9
-    },
-    {
-      "name": "Културен център \"Магура\" Шамбург / Schaumburg, Chicago, Illinois",
-      "count": 107
-    },
-    {
-      "name": "Лос Анджелис (Генерално консулство)",
-      "count": 45
-    },
-    {
-      "name": "Малинчо, Мариета",
-      "count": 12
-    },
-    {
-      "name": "Мартинез Св.св.Кирил и Методи Българската църква, Мартинез,Калифирния, Съединени американски щати",
-      "count": 55
-    },
-    {
-      "name": "Мартинес българска църква",
-      "count": 4
-    },
-    {
-      "name": "Маунт Проспект, Илинойс - Културен център \"Българика\"",
-      "count": 146
-    },
-    {
-      "name": "Маями, Флорида, Форт Лотърдейл",
-      "count": 100
-    },
-    {
-      "name": "Минеаполис, Минесота",
-      "count": 63
-    },
-    {
-      "name": "Нантакет МА, САЩ",
-      "count": 20
-    },
-    {
-      "name": "Нашвил, Тенеси",
-      "count": 46
-    },
-    {
-      "name": "Нейпълс, Флорида / Naples, FL",
-      "count": 42
-    },
-    {
-      "name": "Норуолк",
-      "count": 47
-    },
-    {
-      "name": "Ню Йорк (Генерално консулство)",
-      "count": 81
-    },
-    {
-      "name": "Остин, Тексас",
-      "count": 33
-    },
-    {
-      "name": "Питсбърг, Пенсилвания",
-      "count": 70
-    },
-    {
-      "name": "Портланд, Орегон",
-      "count": 15
-    },
-    {
-      "name": "Ричмънд, Вирджиния",
-      "count": 40
-    },
-    {
-      "name": "Сакраменто, Сакраменто, Калифорния",
-      "count": 54
-    },
-    {
-      "name": "Сейнт Луис , Мисури",
-      "count": 44
-    },
-    {
-      "name": "Сейнт Питърсбърг, Флорид, Българска православна църква \"Света Петка\"",
-      "count": 36
-    },
-    {
-      "name": "Сиатъл",
-      "count": 88
-    },
-    {
-      "name": "Синсинати, Охайо",
-      "count": 89
-    },
-    {
-      "name": "Сиракюз, Ню Йорк",
-      "count": 1
-    },
-    {
-      "name": "Солт Лейк Сити, Юта",
-      "count": 20
-    },
-    {
-      "name": "Финикс, Аризона",
-      "count": 57
-    },
-    {
-      "name": "Хаянис - Кейп Код",
-      "count": 45
-    },
-    {
-      "name": "Хинсдейл",
-      "count": 6
-    },
-    {
-      "name": "Хюстън, Тексас",
-      "count": 53
-    },
-    {
-      "name": "Чикаго (Генерално консулство)",
-      "count": 15
-    },
-    {
-      "name": "Шарлът-Матюс, Шарлът-Матюс",
-      "count": 96
-    },
-    {
-      "name": "Ървайн/Тъстин, Калифорния",
-      "count": 13
+      "name": "Syracuse NY",
+      "lat": 43.0481,
+      "lng": -76.1474,
+      "mandatory": false,
+      "voters": 1
     }
   ]
 }
