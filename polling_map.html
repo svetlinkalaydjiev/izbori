@@ -6,6 +6,7 @@
 <title>Polling Station Map</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
@@ -219,7 +220,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 }).addTo(map);
 
 const layer2026 = L.layerGroup().addTo(map);
-const layer2024 = L.layerGroup();
+let layer2024 = null;
 
 // ── Distance (Haversine) ──────────────────────────────────────────────────────
 function distMiles(a, b) {
@@ -453,33 +454,23 @@ function render2026() {
   document.getElementById('st-expected').textContent = fmt(uExpected) + pct(uExpected);
 }
 
-// ── Render 2024 overlay ───────────────────────────────────────────────────────
+// ── Render 2024 overlay as heatmap ───────────────────────────────────────────
 function render2024(stations) {
-  const maxV = Math.max(...stations.map(s => s.voters));
-  layer2024.clearLayers();
-  stations.forEach(s => {
-    const size = Math.round(22 + (s.voters / maxV) * 18);
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="
-        width:${size}px;height:${size}px;background:#4b7ec8;opacity:0.55;
-        border:2px solid rgba(255,255,255,0.2);border-radius:50%;
-        display:flex;align-items:center;justify-content:center;
-        font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:500;
-        color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.8);
-        box-shadow:0 2px 8px rgba(0,0,0,0.4);cursor:pointer;">${s.voters}</div>`,
-      iconSize: [size,size], iconAnchor: [size/2,size/2], popupAnchor: [0,-(size/2+4)],
-    });
-    const badge = s.mandatory
-      ? `<span class="popup-badge badge-mandatory">Embassy / Consulate</span><br>`
-      : `<span class="popup-badge badge-2024">2024 station</span><br>`;
-    L.marker([s.lat, s.lng], { icon })
-     .bindPopup(`<div style="min-width:175px">
-       <div class="popup-name">${s.name}</div>${badge}
-       <div class="popup-count">${s.voters}<span>2024 voters</span></div>
-     </div>`, { maxWidth: 260 })
-     .addTo(layer2024);
+  if (layer2024) map.removeLayer(layer2024);
+  const maxV   = Math.max(...stations.map(s => s.voters));
+  const points = stations.map(s => [s.lat, s.lng, s.voters / maxV]);
+  layer2024 = L.heatLayer(points, {
+    radius:   70,
+    blur:     55,
+    max:      1.0,
+    gradient: {
+      0.00: 'rgba(20,60,160,0)',
+      0.25: 'rgba(40,100,200,0.10)',
+      0.55: 'rgba(70,140,220,0.22)',
+      1.00: 'rgba(120,190,255,0.38)',
+    },
   });
+  if (show2024) map.addLayer(layer2024);
 }
 
 // ── Controls ──────────────────────────────────────────────────────────────────
@@ -512,6 +503,7 @@ function toggle2024(btn) {
   show2024 = !show2024;
   btn.classList.toggle('active', show2024);
   btn.textContent = show2024 ? 'Hide 2024' : 'Show 2024';
+  if (!layer2024) return;
   if (show2024) map.addLayer(layer2024); else map.removeLayer(layer2024);
 }
 
