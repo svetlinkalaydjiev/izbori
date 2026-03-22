@@ -11,13 +11,19 @@ async function main() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
-  await page.goto(CIK_URL, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.goto(CIK_URL, { waitUntil: 'load', timeout: 60000 });
 
   // If Cloudflare challenge is present, wait for it to resolve
-  await page.waitForFunction(
-    () => !document.title.includes('Just a moment'),
-    { timeout: 20000 }
-  ).catch(() => console.warn('Cloudflare check may not have resolved.'));
+  if (await page.title().then(t => t.includes('Just a moment'))) {
+    console.log('Cloudflare challenge detected, waiting...');
+    await page.waitForFunction(
+      () => !document.title.includes('Just a moment'),
+      { timeout: 30000 }
+    );
+  }
+
+  // Wait for page content to be meaningful (САЩ section or any main content)
+  await page.waitForSelector('body', { timeout: 10000 });
 
   const html = await page.content();
   await browser.close();
