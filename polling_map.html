@@ -460,15 +460,15 @@ function render2024(stations) {
   const maxV   = Math.max(...stations.map(s => s.voters));
   const points = stations.map(s => [s.lat, s.lng, s.voters / maxV]);
   layer2024 = L.heatLayer(points, {
-    radius:     70,
-    blur:       45,
-    max:        0.7,       // lower max → individual points appear more intense
-    minOpacity: 0.2,       // floor so all stations show visible glow
+    radius:     35,
+    blur:       25,
+    max:        0.7,
+    minOpacity: 0.15,
     gradient: {
       0.00: 'rgba(10,40,140,0)',
-      0.25: 'rgba(40,110,210,0.45)',
-      0.55: 'rgba(90,165,240,0.70)',
-      1.00: 'rgba(180,225,255,0.92)',
+      0.25: 'rgba(40,110,210,0.30)',
+      0.55: 'rgba(90,165,240,0.52)',
+      1.00: 'rgba(180,225,255,0.72)',
     },
   });
   if (show2024) map.addLayer(layer2024);
