@@ -358,18 +358,18 @@ function optimizeSelections(pool) {
 function computeStatuses(pool, sel) {
   const openSet = [...pool.filter(s => s.mandatory), ...sel];
   return pool.map(s => {
-    if (s.mandatory)    return { ...s, status: 'mandatory' };
-    if (sel.includes(s)) return { ...s, status: 'open' };
+    if (s.mandatory)     return { ...s, status: 'mandatory', nearestOpen: s };
+    if (sel.includes(s)) return { ...s, status: 'open',      nearestOpen: s };
 
-    let minD = Infinity, nearName = '';
+    let minD = Infinity, nearStation = null, nearName = '';
     for (const o of openSet) {
       const d = distMiles(s, o);
-      if (d < minD) { minD = d; nearName = o.name; }
+      if (d < minD) { minD = d; nearStation = o; nearName = o.name; }
     }
     const status = minD <= dLow  ? 'served'
                  : minD <= dHigh ? 'atrisk'
                  : 'lost';
-    return { ...s, status, nearestDistRaw: minD, nearestDist: Math.round(minD), nearestName: nearName };
+    return { ...s, status, nearestDistRaw: minD, nearestDist: Math.round(minD), nearestName: nearName, nearestOpen: nearStation };
   });
 }
 
@@ -384,7 +384,9 @@ const STATUS_COLOR = {
 
 function pinIcon(s) {
   const isOpen = s.status === 'open' || s.status === 'mandatory';
-  const size   = isOpen ? Math.round(26 + (s.v26 / maxV26) * 22) : 20;
+  // Open pins show expected voters served (capped); closed pins show 2026 заявления
+  const label  = isOpen ? (s.cappedTotal ?? s.v26) : s.v26;
+  const size   = isOpen ? Math.round(26 + (label / maxCapacity) * 22) : 20;
   const fSize  = size >= 44 ? '11px' : size >= 36 ? '10px' : '9px';
   const color  = STATUS_COLOR[s.status];
   return L.divIcon({
@@ -395,7 +397,7 @@ function pinIcon(s) {
       display:flex;align-items:center;justify-content:center;
       font-family:'IBM Plex Mono',monospace;font-size:${fSize};font-weight:500;
       color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.8);
-      box-shadow:0 2px 8px rgba(0,0,0,0.5);cursor:pointer;">${s.v26}</div>`,
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);cursor:pointer;">${label}</div>`,
     iconSize: [size,size], iconAnchor: [size/2,size/2], popupAnchor: [0,-(size/2+4)],
   });
 }
@@ -409,36 +411,49 @@ function popupHtml(s) {
     lost:      'Disenfranchised',
   };
   const badge = `<span class="popup-badge badge-${s.status}">${labels[s.status]}</span><br>`;
+  const isOpen = s.status === 'open' || s.status === 'mandatory';
 
+  if (isOpen && s.contributors) {
+    // ── Open station: expected voters served + contributor breakdown ──────────
+    const overCap = s.rawTotal > maxCapacity;
+    let body = `<div class="popup-count">${s.cappedTotal.toLocaleString()}<span>expected voters</span></div>`;
+    body += overCap
+      ? `<div class="popup-sub" style="color:#e8913a">Over capacity — capped from ${s.rawTotal.toLocaleString()}</div>`
+      : `<div class="popup-sub">${s.rawTotal.toLocaleString()} expected · ${maxCapacity} capacity</div>`;
+
+    // Contributor table (scrollable)
+    body += `<div style="margin-top:7px;max-height:190px;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;font-size:0.55rem;color:#4a5568;
+        text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #2a2f3d;
+        padding-bottom:2px;margin-bottom:2px;">
+        <span>Source location</span><span>Expected</span>
+      </div>`;
+    for (const c of s.contributors) {
+      const distLabel = c.isSelf ? 'self' : `${c.dist} mi · ${c.prob}%`;
+      const nameColor = c.isSelf ? '#c8a84b' : '#8a95a8';
+      const valColor  = c.isSelf ? '#4bc84b' : '#4b8ec8';
+      body += `<div style="display:flex;justify-content:space-between;gap:6px;
+          padding:2px 0;border-bottom:1px solid #1a1f2a;font-size:0.6rem;line-height:1.5">
+        <span style="color:${nameColor};overflow:hidden;text-overflow:ellipsis;
+          white-space:nowrap;flex:1" title="${c.name}">${c.name}</span>
+        <span style="white-space:nowrap;color:${valColor};flex-shrink:0">
+          ${c.expected} <span style="color:#4a5568">(${distLabel})</span>
+        </span>
+      </div>`;
+    }
+    body += `</div>`;
+    return `<div style="min-width:260px"><div class="popup-name">${s.name}</div>${badge}${body}</div>`;
+  }
+
+  // ── Closed station: original display ─────────────────────────────────────
   let body = `<div class="popup-count">${s.v26}<span>2026 заявления</span></div>`;
   if (s.v24 > 0) body += `<div class="popup-sub">${s.v24} voters in 2024</div>`;
   body += `<div class="popup-sub">Est. unique pool: ${s.uniqueVoters.toLocaleString()}</div>`;
-
   if (s.nearestName) {
     const prob = Math.round(travelProb(s.nearestDistRaw) * 100);
     body += `<div class="popup-sub" style="margin-top:5px">Nearest open: ${s.nearestName}<br>${s.nearestDist} mi — ${prob}% travel probability</div>`;
   }
-
   return `<div style="min-width:180px"><div class="popup-name">${s.name}</div>${badge}${body}</div>`;
-}
-
-// ── Capacity-capped expected voters reached ───────────────────────────────────
-// Assigns each pool location's expected arrivals to its nearest open station,
-// caps each station at maxCapacity, returns total served.
-function computeCappedExpected(pool, sel) {
-  const openSet = [...pool.filter(s => s.mandatory), ...sel];
-  const buckets = new Float64Array(openSet.length);
-  for (const loc of pool) {
-    let minD = Infinity, nearIdx = 0;
-    for (let k = 0; k < openSet.length; k++) {
-      const d = distMiles(loc, openSet[k]);
-      if (d < minD) { minD = d; nearIdx = k; }
-    }
-    buckets[nearIdx] += loc.uniqueVoters * travelProb(minD);
-  }
-  let total = 0;
-  for (const amt of buckets) total += Math.min(amt, maxCapacity);
-  return total;
 }
 
 // ── Render 2026 layer ─────────────────────────────────────────────────────────
@@ -446,6 +461,36 @@ function render2026() {
   if (!voterPool || !selected) return;
   layer2026.clearLayers();
   const statused = computeStatuses(voterPool, selected);
+
+  // Build per-station assignment map: original pool object → contributor list + totals
+  const openOriginals = [...voterPool.filter(s => s.mandatory), ...selected];
+  const stationData   = new Map(openOriginals.map(o => [o, { rawTotal: 0, contributors: [] }]));
+
+  statused.forEach(s => {
+    const bucket = stationData.get(s.nearestOpen);
+    if (!bucket) return;
+    const dist  = (s.status === 'open' || s.status === 'mandatory') ? 0 : s.nearestDistRaw;
+    const prob  = travelProb(dist);
+    const exp   = s.uniqueVoters * prob;
+    bucket.rawTotal += exp;
+    if (exp >= 0.5) {
+      bucket.contributors.push({
+        name: s.name, dist: Math.round(dist), prob: Math.round(prob * 100),
+        v26: s.v26, v24: s.v24, uniqueVoters: s.uniqueVoters, expected: Math.round(exp),
+        isSelf: s.status === 'open' || s.status === 'mandatory',
+      });
+    }
+  });
+
+  // Cap, sort, and annotate statused open/mandatory entries in-place
+  statused.forEach(s => {
+    if (s.status !== 'open' && s.status !== 'mandatory') return;
+    const bucket = stationData.get(s.nearestOpen);
+    if (!bucket) return;
+    s.cappedTotal  = Math.min(Math.round(bucket.rawTotal), maxCapacity);
+    s.rawTotal     = Math.round(bucket.rawTotal);
+    s.contributors = bucket.contributors.sort((a, b) => b.expected - a.expected);
+  });
 
   let nOpen = 0, nEmb = 0;
   let uServed = 0, uAtrisk = 0, uLost = 0;
@@ -456,22 +501,19 @@ function render2026() {
     if (s.status === 'mandatory') nEmb++;
 
     const atOpen = s.status === 'open' || s.status === 'mandatory';
-
-    // Hard-threshold categorization (for display colours and served/far/disenf counts)
     if (atOpen || s.status === 'served') uServed += s.uniqueVoters;
     else if (s.status === 'atrisk')      uAtrisk += s.uniqueVoters;
     else                                  uLost   += s.uniqueVoters;
 
-    // Only render pins for locations that have 2026 заявления
     if (s.v26 > 0) {
       L.marker([s.lat, s.lng], { icon: pinIcon(s) })
-       .bindPopup(popupHtml(s), { maxWidth: 280 })
+       .bindPopup(popupHtml(s), { maxWidth: 310 })
        .addTo(layer2026);
     }
   });
 
-  // Capacity-capped expected: each open station serves at most maxCapacity voters
-  const uExpected = computeCappedExpected(voterPool, selected);
+  let uExpected = 0;
+  for (const [, b] of stationData) uExpected += Math.min(Math.round(b.rawTotal), maxCapacity);
 
   const fmt = n => Math.round(n).toLocaleString();
   const pct = n => ` (${Math.round(n / totalPool * 100)}%)`;
