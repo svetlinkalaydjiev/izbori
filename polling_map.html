@@ -42,23 +42,24 @@ header h1 {
 .legend-item { display: flex; align-items: center; gap: 4px; cursor: default; }
 .leg-dot { width: 9px; height: 9px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; }
 
-/* ── Slider ── */
+/* ── Sliders ── */
+.sliders-group { display: flex; flex-direction: column; gap: 4px; }
 .slider-wrap {
   display: flex; align-items: center; gap: 7px;
   font-size: 0.6rem; color: #8a95a8;
   text-transform: uppercase; letter-spacing: 0.07em;
 }
 .slider-wrap input[type=range] {
-  -webkit-appearance: none; width: 100px; height: 3px;
+  -webkit-appearance: none; width: 90px; height: 3px;
   background: #2a2f3d; border-radius: 2px; outline: none; cursor: pointer;
 }
 .slider-wrap input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none; width: 13px; height: 13px;
   border-radius: 50%; background: #c8a84b; border: 2px solid #0d0f14;
 }
-.slider-val { color: #c8a84b; min-width: 3ch; }
+.slider-val { color: #c8a84b; min-width: 4ch; }
 
-/* ── Toggle button ── */
+/* ── Buttons ── */
 .toggle-btn {
   padding: 3px 10px; font-size: 0.6rem; font-family: 'IBM Plex Mono', monospace;
   background: #1e2a3a; border: 1px solid #2a2f3d; color: #8a95a8;
@@ -66,7 +67,10 @@ header h1 {
   text-transform: uppercase; letter-spacing: 0.07em; transition: all 0.15s;
 }
 .toggle-btn.active { border-color: #4b8ec8; color: #4b8ec8; background: #0e1a2a; }
-.toggle-btn:hover:not(.active) { border-color: #6b7280; color: #c8c4b9; }
+.toggle-btn:hover:not(.active):not(:disabled) { border-color: #6b7280; color: #c8c4b9; }
+.toggle-btn:disabled { opacity: 0.4; cursor: default; }
+.rerun-btn { border-color: #4a5568; color: #6b7280; }
+.rerun-btn:hover:not(:disabled) { border-color: #c8a84b !important; color: #c8a84b !important; }
 
 /* ── Map ── */
 #map { flex: 1; width: 100%; }
@@ -76,15 +80,22 @@ header h1 {
   position: absolute; bottom: 30px; right: 10px;
   background: #161920ee; border: 1px solid #2a2f3d;
   padding: 10px 14px; font-size: 0.63rem; line-height: 2.1;
-  z-index: 1000; min-width: 210px;
+  z-index: 1000; min-width: 230px;
 }
 .stat { display: flex; justify-content: space-between; gap: 16px; }
 .stat-label { color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; }
-.stat-open  { color: #4bc84b; }
-.stat-emb   { color: #c8a84b; }
+.stat-pool   { color: #e8e4d9; }
+.stat-open   { color: #4bc84b; }
+.stat-emb    { color: #c8a84b; }
 .stat-served { color: #4b8ec8; }
 .stat-atrisk { color: #e8913a; }
-.stat-lost  { color: #c84b4b; }
+.stat-lost   { color: #c84b4b; }
+.stat-exp    { color: #a78bfa; }
+.stat-divider { border-top: 1px solid #2a2f3d; margin: 3px 0; }
+.stat-note {
+  font-size: 0.52rem; color: #4a5568; margin-top: 6px;
+  border-top: 1px solid #2a2f3d; padding-top: 6px; line-height: 1.65;
+}
 
 /* ── Popups ── */
 .leaflet-popup-content-wrapper {
@@ -121,17 +132,25 @@ header h1 {
   </div>
   <div class="header-right">
     <div class="legend">
-      <div class="legend-item"><div class="leg-dot" style="background:#4bc84b"></div>Open (top 20)</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#4bc84b"></div>Open (optimal 20)</div>
       <div class="legend-item"><div class="leg-dot" style="background:#c8a84b"></div>Embassy</div>
       <div class="legend-item"><div class="leg-dot" style="background:#4b8ec8"></div>Served</div>
       <div class="legend-item"><div class="leg-dot" style="background:#e8913a"></div>Far</div>
       <div class="legend-item"><div class="leg-dot" style="background:#c84b4b"></div>Disenfranchised</div>
     </div>
-    <div class="slider-wrap">
-      <span>Travel limit</span>
-      <input type="range" id="slider-travel" min="50" max="200" value="100" oninput="onTravelSlider(this.value)">
-      <span class="slider-val" id="travel-val">100 mi</span>
+    <div class="sliders-group">
+      <div class="slider-wrap">
+        <span>Full travel</span>
+        <input type="range" id="slider-dlow" min="5" max="100" step="5" value="20" oninput="onDlowSlider(this.value)">
+        <span class="slider-val" id="dlow-val">20 mi</span>
+      </div>
+      <div class="slider-wrap">
+        <span>Max travel</span>
+        <input type="range" id="slider-dhigh" min="50" max="500" step="25" value="200" oninput="onDhighSlider(this.value)">
+        <span class="slider-val" id="dhigh-val">200 mi</span>
+      </div>
     </div>
+    <button class="toggle-btn rerun-btn" id="btn-rerun" onclick="rerunOptimization()">Rerun</button>
     <button class="toggle-btn" id="btn-2024" onclick="toggle2024(this)">Show 2024</button>
   </div>
 </header>
@@ -139,18 +158,61 @@ header h1 {
 <div id="map"></div>
 
 <div id="stats">
-  <div class="stat"><span class="stat-label">Open sections</span>   <span class="stat-open"   id="st-open">—</span></div>
-  <div class="stat"><span class="stat-label">Embassy / consulate</span> <span class="stat-emb" id="st-emb">—</span></div>
-  <div class="stat"><span class="stat-label">Served</span>           <span class="stat-served" id="st-served">—</span></div>
-  <div class="stat"><span class="stat-label">Far (reachable)</span>  <span class="stat-atrisk" id="st-atrisk">—</span></div>
-  <div class="stat"><span class="stat-label">Disenfranchised</span>  <span class="stat-lost"   id="st-lost">—</span></div>
+  <div class="stat">
+    <span class="stat-label">Voter pool</span>
+    <span class="stat-pool" id="st-pool">—</span>
+  </div>
+  <div class="stat">
+    <span class="stat-label">Open sections</span>
+    <span class="stat-open" id="st-open">—</span>
+  </div>
+  <div class="stat">
+    <span class="stat-label">Embassy / consulate</span>
+    <span class="stat-emb" id="st-emb">—</span>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat">
+    <span class="stat-label">Served (≤ full-travel)</span>
+    <span class="stat-served" id="st-served">—</span>
+  </div>
+  <div class="stat">
+    <span class="stat-label">Far (reachable)</span>
+    <span class="stat-atrisk" id="st-atrisk">—</span>
+  </div>
+  <div class="stat">
+    <span class="stat-label">Disenfranchised</span>
+    <span class="stat-lost" id="st-lost">—</span>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat">
+    <span class="stat-label">Expected reached</span>
+    <span class="stat-exp" id="st-expected">—</span>
+  </div>
+  <div class="stat-note">
+    Pool = 2026 applicants + est. 2024 active voters (×0.8) minus 90% overlap with 2026.
+    Served = at open section or within full-travel distance.
+    Far = between full-travel and max-travel (cosine decay zone).
+    Expected = probability-weighted sum across all voters.
+    Pins show 2026 заявления counts only.
+  </div>
 </div>
 
 <script>
-const DISENFRANCHISED_MILES = 200;
-let travelThreshold = 100;
-let show2024 = false;
+// ── Constants ──────────────────────────────────────────────────────────────────
+const RETENTION_2024 = 0.80;  // fraction of 2024 voters still active
+const OVERLAP_2026   = 0.90;  // fraction of 2026 applicants who were also 2024 voters
+const MIN_ZAV        = 40;    // minimum заявления to be eligible to open
+const TOP_N          = 20;    // max non-mandatory sections to open
 
+// ── State ──────────────────────────────────────────────────────────────────────
+let dLow      = 20;    // below this distance: 100% travel probability
+let dHigh     = 200;   // above this distance: 0% travel probability
+let show2024  = false;
+let voterPool = null;  // all locations with combined voter counts
+let selected  = null;  // the 20 optimally chosen station objects
+let maxV26    = 1;
+
+// ── Map setup ─────────────────────────────────────────────────────────────────
 const map = L.map('map', { center: [38.5, -96], zoom: 4 });
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 19
@@ -159,7 +221,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 const layer2026 = L.layerGroup().addTo(map);
 const layer2024 = L.layerGroup();
 
-// ── Distance ─────────────────────────────────────────────────────────────────
+// ── Distance (Haversine) ──────────────────────────────────────────────────────
 function distMiles(a, b) {
   const R = 3958.8;
   const φ1 = a.lat * Math.PI/180, φ2 = b.lat * Math.PI/180;
@@ -169,29 +231,129 @@ function distMiles(a, b) {
   return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
 }
 
-// ── Status computation ────────────────────────────────────────────────────────
-function computeStatuses(stations) {
-  const mandatory  = stations.filter(s => s.mandatory);
-  const voluntary  = stations.filter(s => !s.mandatory).sort((a,b) => b.voters - a.voters);
-  const top20      = voluntary.slice(0, 20);
-  const openSet    = [...mandatory, ...top20];
+// ── Travel probability: cosine decay between dLow and dHigh ──────────────────
+// 100% at d≤dLow, 0% at d≥dHigh, smooth cosine curve between
+function travelProb(dist) {
+  if (dist <= dLow)  return 1;
+  if (dist >= dHigh) return 0;
+  return 0.5 * (1 + Math.cos(Math.PI * (dist - dLow) / (dHigh - dLow)));
+}
 
-  return stations.map(s => {
-    if (s.mandatory) return { ...s, status: 'mandatory' };
-    if (top20.includes(s)) return { ...s, status: 'open' };
+// ── Build unified voter pool ──────────────────────────────────────────────────
+// Joins 2026 and 2024 datasets. For each location computes:
+//   uniqueVoters = v26 + max(0, v24×0.8 − v26×0.9)
+// (all 2026 applicants + 2024 active voters not already counted in 2026)
+function buildVoterPool(s26, s24) {
+  const MATCH_DEG = 0.02; // ~1.4 mi — threshold to consider two locations the same
+  const usedIn24  = new Set();
 
-    let nearestDist = Infinity;
-    let nearestName = '';
+  const pool = s26.map(a => {
+    // Find nearest 2024 station by coordinate proximity
+    let best = null, bestD = Infinity;
+    for (const b of s24) {
+      const d = Math.hypot(a.lat - b.lat, a.lng - b.lng);
+      if (d < bestD) { bestD = d; best = b; }
+    }
+    const v24 = (best && bestD < MATCH_DEG) ? (usedIn24.add(best), best.voters) : 0;
+    const v26 = a.voters;
+    const unique = Math.round(v26 + Math.max(0, v24 * RETENTION_2024 - v26 * OVERLAP_2026));
+    return { ...a, v26, v24, uniqueVoters: unique };
+  });
+
+  // Add 2024-only locations (no 2026 registrations, can't open, but voters count)
+  for (const b of s24) {
+    if (!usedIn24.has(b)) {
+      pool.push({
+        name: b.name, lat: b.lat, lng: b.lng, mandatory: b.mandatory,
+        voters: 0, v26: 0, v24: b.voters,
+        uniqueVoters: Math.round(b.voters * RETENTION_2024),
+      });
+    }
+  }
+  return pool;
+}
+
+// ── Optimization: greedy construction + local-search swap improvement ─────────
+// Returns array of TOP_N station objects from pool (non-mandatory, v26 ≥ MIN_ZAV)
+// that maximise sum of uniqueVoters × travelProb(distToNearestOpen) across all pool locations.
+function optimizeSelections(pool) {
+  const mandatory = pool.filter(s => s.mandatory);
+  const eligible  = pool.filter(s => !s.mandatory && s.v26 >= MIN_ZAV);
+  const n = Math.min(TOP_N, eligible.length);
+  if (n === 0) return [];
+
+  // Precompute distance matrices to avoid repeated trig in the inner loop
+  // distME[i][j] = dist from pool[i] to eligible[j]
+  const distME = pool.map(loc => eligible.map(e => distMiles(loc, e)));
+  // mandMin[i] = min dist from pool[i] to any mandatory station (baseline coverage)
+  const mandMin = pool.map(loc =>
+    mandatory.length ? Math.min(...mandatory.map(m => distMiles(loc, m))) : Infinity
+  );
+
+  // Score a selection expressed as index array into eligible[]
+  function score(selIdxs) {
+    let total = 0;
+    for (let i = 0; i < pool.length; i++) {
+      let minD = mandMin[i];
+      for (const j of selIdxs) {
+        const d = distME[i][j];
+        if (d < minD) minD = d;
+      }
+      total += pool[i].uniqueVoters * travelProb(minD);
+    }
+    return total;
+  }
+
+  // Phase 1: greedy — iteratively pick the candidate with highest marginal gain
+  const selIdxs   = [];
+  const unselIdxs = eligible.map((_, j) => j);
+
+  for (let iter = 0; iter < n; iter++) {
+    let bestScore = -Infinity, bestPos = 0;
+    for (let pos = 0; pos < unselIdxs.length; pos++) {
+      const s = score([...selIdxs, unselIdxs[pos]]);
+      if (s > bestScore) { bestScore = s; bestPos = pos; }
+    }
+    selIdxs.push(unselIdxs.splice(bestPos, 1)[0]);
+  }
+
+  // Phase 2: local search — try all 1-for-1 swaps until no improvement
+  let improved = true;
+  while (improved) {
+    improved = false;
+    const base = score(selIdxs);
+    outer:
+    for (let i = 0; i < selIdxs.length; i++) {
+      for (let pos = 0; pos < unselIdxs.length; pos++) {
+        const trial = [...selIdxs]; trial[i] = unselIdxs[pos];
+        if (score(trial) > base + 0.1) {
+          [selIdxs[i], unselIdxs[pos]] = [unselIdxs[pos], selIdxs[i]];
+          improved = true;
+          break outer;
+        }
+      }
+    }
+  }
+
+  return selIdxs.map(j => eligible[j]);
+}
+
+// ── Compute display status for each pool location ─────────────────────────────
+function computeStatuses(pool, sel) {
+  const openSet = [...pool.filter(s => s.mandatory), ...sel];
+  return pool.map(s => {
+    if (s.mandatory)    return { ...s, status: 'mandatory' };
+    if (sel.includes(s)) return { ...s, status: 'open' };
+
+    let minD = Infinity, nearName = '';
     for (const o of openSet) {
       const d = distMiles(s, o);
-      if (d < nearestDist) { nearestDist = d; nearestName = o.name; }
+      if (d < minD) { minD = d; nearName = o.name; }
     }
-    nearestDist = Math.round(nearestDist);
-
-    const status = nearestDist <= travelThreshold          ? 'served'
-                 : nearestDist <= DISENFRANCHISED_MILES    ? 'atrisk'
+    const status = minD <= dLow  ? 'served'
+                 : minD <= dHigh ? 'atrisk'
                  : 'lost';
-    return { ...s, status, nearestDist, nearestName };
+    return { ...s, status, nearestDistRaw: minD, nearestDist: Math.round(minD), nearestName: nearName };
   });
 }
 
@@ -204,73 +366,94 @@ const STATUS_COLOR = {
   lost:      '#c84b4b',
 };
 
-function pinIcon(s, maxVoters) {
+function pinIcon(s) {
   const isOpen = s.status === 'open' || s.status === 'mandatory';
-  const size   = isOpen ? Math.round(26 + (s.voters / maxVoters) * 22) : 20;
+  const size   = isOpen ? Math.round(26 + (s.v26 / maxV26) * 22) : 20;
   const fSize  = size >= 44 ? '11px' : size >= 36 ? '10px' : '9px';
   const color  = STATUS_COLOR[s.status];
-  const opacity = isOpen ? 1 : 0.75;
   return L.divIcon({
     className: '',
     html: `<div style="
-      width:${size}px;height:${size}px;background:${color};opacity:${opacity};
+      width:${size}px;height:${size}px;background:${color};opacity:${isOpen?1:0.75};
       border:2px solid rgba(255,255,255,${isOpen?0.4:0.2});border-radius:50%;
       display:flex;align-items:center;justify-content:center;
       font-family:'IBM Plex Mono',monospace;font-size:${fSize};font-weight:500;
       color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.8);
-      box-shadow:0 2px 8px rgba(0,0,0,0.5);cursor:pointer;">${s.voters}</div>`,
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);cursor:pointer;">${s.v26}</div>`,
     iconSize: [size,size], iconAnchor: [size/2,size/2], popupAnchor: [0,-(size/2+4)],
   });
 }
 
 function popupHtml(s) {
-  const labels = { mandatory:'Embassy / Consulate', open:'Open — Top 20',
-                   served:'Served', atrisk:'Far — Reachable', lost:'Disenfranchised' };
-  const badge  = `<span class="popup-badge badge-${s.status}">${labels[s.status]}</span><br>`;
-  const dist   = s.nearestDist != null
-    ? `<div class="popup-sub">Nearest open: ${s.nearestName}<br>${s.nearestDist} mi away</div>`
-    : '';
-  return `<div style="min-width:180px">
-    <div class="popup-name">${s.name}</div>
-    ${badge}
-    <div class="popup-count">${s.voters}<span>2026 заявления</span></div>
-    ${dist}
-  </div>`;
+  const labels = {
+    mandatory: 'Embassy / Consulate',
+    open:      'Open — Optimal 20',
+    served:    'Served',
+    atrisk:    'Far — Reachable',
+    lost:      'Disenfranchised',
+  };
+  const badge = `<span class="popup-badge badge-${s.status}">${labels[s.status]}</span><br>`;
+
+  let body = `<div class="popup-count">${s.v26}<span>2026 заявления</span></div>`;
+  if (s.v24 > 0) body += `<div class="popup-sub">${s.v24} voters in 2024</div>`;
+  body += `<div class="popup-sub">Est. unique pool: ${s.uniqueVoters.toLocaleString()}</div>`;
+
+  if (s.nearestName) {
+    const prob = Math.round(travelProb(s.nearestDistRaw) * 100);
+    body += `<div class="popup-sub" style="margin-top:5px">Nearest open: ${s.nearestName}<br>${s.nearestDist} mi — ${prob}% travel probability</div>`;
+  }
+
+  return `<div style="min-width:180px"><div class="popup-name">${s.name}</div>${badge}${body}</div>`;
 }
 
 // ── Render 2026 layer ─────────────────────────────────────────────────────────
-let stations2026cached = null;
-let maxVoters2026 = 1;
-
 function render2026() {
-  if (!stations2026cached) return;
+  if (!voterPool || !selected) return;
   layer2026.clearLayers();
-  const statused = computeStatuses(stations2026cached);
+  const statused = computeStatuses(voterPool, selected);
 
-  let nOpen=0, nEmb=0, votersServed=0, votersAtrisk=0, votersLost=0;
+  let nOpen = 0, nEmb = 0;
+  let uServed = 0, uAtrisk = 0, uLost = 0, uExpected = 0;
+  const totalPool = voterPool.reduce((a, s) => a + s.uniqueVoters, 0);
+
   statused.forEach(s => {
     if (s.status === 'open')      nOpen++;
     if (s.status === 'mandatory') nEmb++;
-    if (s.status === 'served')    votersServed += s.voters;
-    if (s.status === 'atrisk')    votersAtrisk += s.voters;
-    if (s.status === 'lost')      votersLost   += s.voters;
 
-    L.marker([s.lat, s.lng], { icon: pinIcon(s, maxVoters2026) })
-     .bindPopup(popupHtml(s), { maxWidth: 270 })
-     .addTo(layer2026);
+    const atOpen = s.status === 'open' || s.status === 'mandatory';
+
+    // Hard-threshold categorization (for display colours and served/far/disenf counts)
+    if (atOpen || s.status === 'served') uServed += s.uniqueVoters;
+    else if (s.status === 'atrisk')      uAtrisk += s.uniqueVoters;
+    else                                  uLost   += s.uniqueVoters;
+
+    // Probability-weighted expected turnout
+    if (atOpen || s.status === 'served') {
+      uExpected += s.uniqueVoters;
+    } else if (s.status === 'atrisk') {
+      uExpected += s.uniqueVoters * travelProb(s.nearestDistRaw);
+    }
+
+    // Only render pins for locations that have 2026 заявления
+    if (s.v26 > 0) {
+      L.marker([s.lat, s.lng], { icon: pinIcon(s) })
+       .bindPopup(popupHtml(s), { maxWidth: 280 })
+       .addTo(layer2026);
+    }
   });
 
-  const fmt = n => n.toLocaleString();
-  const tot = stations2026cached.reduce((a,s) => a+s.voters, 0);
-  const pct = n => ` (${Math.round(n/tot*100)}%)`;
-  document.getElementById('st-open').textContent   = nOpen;
-  document.getElementById('st-emb').textContent    = nEmb;
-  document.getElementById('st-served').textContent = fmt(votersServed) + pct(votersServed);
-  document.getElementById('st-atrisk').textContent = fmt(votersAtrisk) + pct(votersAtrisk);
-  document.getElementById('st-lost').textContent   = fmt(votersLost)   + pct(votersLost);
+  const fmt = n => Math.round(n).toLocaleString();
+  const pct = n => ` (${Math.round(n / totalPool * 100)}%)`;
+  document.getElementById('st-pool').textContent     = fmt(totalPool);
+  document.getElementById('st-open').textContent     = nOpen;
+  document.getElementById('st-emb').textContent      = nEmb;
+  document.getElementById('st-served').textContent   = fmt(uServed)   + pct(uServed);
+  document.getElementById('st-atrisk').textContent   = fmt(uAtrisk)   + pct(uAtrisk);
+  document.getElementById('st-lost').textContent     = fmt(uLost)     + pct(uLost);
+  document.getElementById('st-expected').textContent = fmt(uExpected) + pct(uExpected);
 }
 
-// ── Render 2024 layer ─────────────────────────────────────────────────────────
+// ── Render 2024 overlay ───────────────────────────────────────────────────────
 function render2024(stations) {
   const maxV = Math.max(...stations.map(s => s.voters));
   layer2024.clearLayers();
@@ -300,10 +483,29 @@ function render2024(stations) {
 }
 
 // ── Controls ──────────────────────────────────────────────────────────────────
-function onTravelSlider(val) {
-  travelThreshold = Number(val);
-  document.getElementById('travel-val').textContent = val + ' mi';
+function onDlowSlider(val) {
+  dLow = Math.min(Number(val), dHigh - 10);
+  document.getElementById('dlow-val').textContent = dLow + ' mi';
   render2026();
+}
+
+function onDhighSlider(val) {
+  dHigh = Math.max(Number(val), dLow + 10);
+  document.getElementById('dhigh-val').textContent = dHigh + ' mi';
+  render2026();
+}
+
+function rerunOptimization() {
+  if (!voterPool) return;
+  const btn = document.getElementById('btn-rerun');
+  btn.textContent = 'Running…';
+  btn.disabled = true;
+  setTimeout(() => {
+    selected = optimizeSelections(voterPool);
+    render2026();
+    btn.textContent = 'Rerun';
+    btn.disabled = false;
+  }, 10);
 }
 
 function toggle2024(btn) {
@@ -326,12 +528,13 @@ async function loadData() {
     const d26 = await r26.json();
     const d24 = await r24.json();
 
-    stations2026cached = d26.stations;
-    maxVoters2026 = Math.max(...d26.stations.map(s => s.voters));
+    voterPool = buildVoterPool(d26.stations, d24.stations);
+    maxV26    = Math.max(...voterPool.map(s => s.v26));
 
     document.getElementById('subtitle').textContent =
       `2026: ${d26.total.toLocaleString()} заявления · ${d26.stations.length} locations`;
 
+    selected = optimizeSelections(voterPool);
     render2026();
     render2024(d24.stations);
 
