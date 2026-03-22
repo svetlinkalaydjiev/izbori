@@ -1,3 +1,4 @@
+import { chromium } from 'playwright';
 import * as cheerio from 'cheerio';
 import { writeFileSync, mkdirSync } from 'fs';
 
@@ -5,18 +6,22 @@ const CIK_URL = 'https://www.cik.bg/bg/ns19.04.2026/abroad/registered';
 const OUT_FILE = 'data/stations.json';
 
 async function main() {
-  console.log(`Fetching ${CIK_URL} ...`);
+  console.log(`Launching browser to fetch ${CIK_URL} ...`);
 
-  const res = await fetch(CIK_URL, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'bg,en-US;q=0.9,en;q=0.8',
-    }
-  });
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
 
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-  const html = await res.text();
+  await page.goto(CIK_URL, { waitUntil: 'networkidle', timeout: 30000 });
+
+  // If Cloudflare challenge is present, wait for it to resolve
+  await page.waitForFunction(
+    () => !document.title.includes('Just a moment'),
+    { timeout: 20000 }
+  ).catch(() => console.warn('Cloudflare check may not have resolved.'));
+
+  const html = await page.content();
+  await browser.close();
+
   console.log(`Fetched ${html.length} bytes.`);
 
   const result = parseUSAStations(html);
@@ -34,11 +39,10 @@ function parseUSAStations(html) {
   let $heading = null;
   $('*').each((_, el) => {
     const $el = $(el);
-    // Check own text only (not inherited from children) to avoid matching ancestors
     const ownText = $el.clone().children().remove().end().text().trim();
     if (/САЩ\s*\(\d+\)/.test(ownText)) {
       $heading = $el;
-      return false; // break
+      return false;
     }
   });
 
@@ -69,17 +73,14 @@ function parseUSAStations(html) {
 
   $heading.nextAll().each((_, el) => {
     const $el = $(el);
-    // Stop at the next country heading (same tag, contains "(N)")
     if ($el.is(headingTag) && /\(\d+\)/.test($el.text())) return false;
 
-    // Collect all non-empty leaf text nodes
     const leaves = $el.find('*').filter((_, e) => $(e).children().length === 0);
     leaves.each((_, e) => {
       const text = $(e).text().trim();
       if (text) stations.push(text);
     });
 
-    // If no leaves, use the element's own text
     if (leaves.length === 0) {
       const text = $el.text().trim();
       if (text) stations.push(text);
