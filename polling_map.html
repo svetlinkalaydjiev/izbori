@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polling Station Map</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ── Reset & base ─────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: #0d0f14; color: #e8e4d9;
+  height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+header {
+  background: #161920; border-bottom: 1px solid #2a2f3d;
+  flex-shrink: 0;
+}
+.header-row1 {
+  padding: 10px 16px;
+  display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+}
+header h1 {
+  font-family: 'Playfair Display', serif; font-size: 1.1rem;
+  color: #c8a84b; white-space: nowrap;
+}
+.subtitle { font-size: 0.62rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ── Right-side column (legend + filters + scenarios) ─────────────────────── */
+.header-right {
+  margin-left: auto;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+}
+.header-right-top {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end;
+}
+
+/* ── Legend ───────────────────────────────────────────────────────────────── */
+.legend {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  font-size: 0.62rem; color: #8a95a8;
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
+
+/* ── Filter bar ───────────────────────────────────────────────────────────── */
+.filter-bar { display: flex; gap: 6px; align-items: center; }
+.filter-btn {
+  padding: 3px 10px; font-size: 0.6rem; font-family: 'IBM Plex Mono', monospace;
+  background: #1e2a3a; border: 1px solid #2a2f3d; color: #8a95a8;
+  cursor: pointer; border-radius: 2px;
+  text-transform: uppercase; letter-spacing: 0.07em; transition: all 0.15s;
+}
+.filter-btn.active { border-color: #c8a84b; color: #c8a84b; background: #1e2010; }
+.filter-btn:hover  { border-color: #4b7ec8; color: #4b7ec8; }
+
+/* ── Scenario toggle buttons ─────────────────────────────────────────────── */
+#scenario-bar {
+  display: none;
+  align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
+}
+.scen-label-text {
+  font-size: 0.6rem; color: #4a5568;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  white-space: nowrap; flex-shrink: 0; margin-right: 2px;
+}
+.scen-btn {
+  padding: 3px 10px; font-size: 0.6rem; font-family: 'IBM Plex Mono', monospace;
+  background: #1a1f2a; border: 1px solid #2a2f3d; color: #6b7280;
+  cursor: pointer; border-radius: 2px;
+  text-transform: uppercase; letter-spacing: 0.07em; transition: all 0.15s;
+}
+.scen-btn.active { border-color: #c8a84b; color: #c8a84b; background: #1e2010; }
+.scen-btn:hover:not(.active) { border-color: #4b7ec8; color: #4b7ec8; }
+
+/* ── Map ──────────────────────────────────────────────────────────────────── */
+#map { flex: 1; width: 100%; }
+
+/* ── Popups ───────────────────────────────────────────────────────────────── */
+.leaflet-popup-content-wrapper {
+  background: #161920 !important; border: 1px solid #2a2f3d !important;
+  border-radius: 2px !important; box-shadow: 0 4px 20px rgba(0,0,0,0.6) !important;
+  color: #e8e4d9 !important; font-family: 'IBM Plex Mono', monospace !important;
+}
+.leaflet-popup-tip          { background: #2a2f3d !important; }
+.leaflet-popup-close-button { color: #6b7280 !important; font-size: 18px !important; }
+.popup-name  { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: #c8a84b; margin-bottom: 6px; line-height: 1.3; }
+.popup-votes { font-size: 1.3rem; font-weight: 500; color: #fff; margin-bottom: 2px; }
+.popup-votes span { font-size: 0.65rem; color: #6b7280; margin-left: 4px; }
+.popup-own   { font-size: 0.7rem; color: #8a95a8; margin-bottom: 4px; }
+.popup-badge { display: inline-block; font-size: 0.6rem; padding: 2px 8px; border-radius: 2px; margin-bottom: 6px; }
+.badge-keep  { background: #1a3a1a; color: #4bc84b; border: 1px solid #2a6a2a; }
+.badge-redir { background: #1a2a3a; color: #4b8ec8; border: 1px solid #2a4a6a; }
+.badge-lost  { background: #3a1a1a; color: #c84b4b; border: 1px solid #6a2a2a; }
+.badge-emb   { background: #3a2a0a; color: #c8a84b; border: 1px solid #6a5a2a; }
+.popup-detail { font-size: 0.62rem; color: #6b7280; margin-top: 4px; line-height: 1.7; }
+.popup-arrow  { font-size: 0.7rem; color: #4b8ec8; margin-top: 4px; }
+.popup-bar    { margin-top: 8px; height: 3px; background: #2a2f3d; border-radius: 2px; overflow: hidden; }
+.popup-bar-fill { height: 100%; border-radius: 2px; }
+
+/* ── Stats panel ─────────────────────────────────────────────────────────── */
+#stats {
+  position: absolute; bottom: 30px; right: 10px;
+  background: #161920ee; border: 1px solid #2a2f3d;
+  padding: 10px 14px; font-size: 0.63rem; line-height: 2;
+  z-index: 1000; min-width: 190px;
+}
+.stat       { display: flex; justify-content: space-between; gap: 16px; }
+.stat-label { color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; }
+.stat-val   { color: #c8a84b; }
+.stat-lost  { color: #c84b4b; }
+.stat-ok    { color: #4bc84b; }
+
+.leaflet-control-attribution {
+  background: #161920cc !important; color: #6b7280 !important; font-size: 10px !important;
+}
+.leaflet-control-attribution a { color: #4b7ec8 !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row1">
+    <div>
+      <h1>Polling Station Map</h1>
+      <div class="subtitle">No data loaded</div>
+    </div>
+    <div class="header-right">
+      <div class="header-right-top">
+        <div class="legend" id="legend"></div>
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+          <button class="filter-btn" onclick="setFilter('keep',this)">Keep</button>
+          <button class="filter-btn" onclick="setFilter('redir',this)">Redirected</button>
+          <button class="filter-btn" onclick="setFilter('lost',this)">Lost</button>
+          <button class="filter-btn" onclick="setFilter('embassy',this)">Embassy</button>
+        </div>
+      </div>
+      <div id="scenario-bar">
+        <span class="scen-label-text">Scenario</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="map"></div>
+
+<div id="stats">
+  <div class="stat"><span class="stat-label">Total voters</span>  <span class="stat-val"  id="st-total">—</span></div>
+  <div class="stat"><span class="stat-label">Preserved</span>      <span class="stat-ok"   id="st-pres">—</span></div>
+  <div class="stat"><span class="stat-label">Lost</span>           <span class="stat-lost" id="st-lost">—</span></div>
+  <div class="stat"><span class="stat-label">Stations kept</span>  <span class="stat-val"  id="st-kept">—</span></div>
+  <div class="stat"><span class="stat-label">Cap violations</span> <span class="stat-ok"   id="st-cap">—</span></div>
+</div>
+
+<script>
+const map = L.map('map', { center: [38.5, -96], zoom: 4 });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+
+const colors = { keep: '#4bc84b', redir: '#4b8ec8', lost: '#c84b4b', embassy: '#c8a84b' };
+let layerGroups = {};
+let activeFilter = 'all';
+
+function setFilter(type, btn) {
+  activeFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  Object.entries(layerGroups).forEach(([key, lg]) => {
+    if (type === 'all' || type === key) { if (!map.hasLayer(lg)) map.addLayer(lg); }
+    else                                { if (map.hasLayer(lg))  map.removeLayer(lg); }
+  });
+}
+
+// ── Load station data ─────────────────────────────────────────────────────────
+async function loadStations() {
+  let data;
+  try {
+    const res = await fetch('data/stations.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+  } catch (err) {
+    console.error('[stations] Failed to load data/stations.json:', err);
+    return;
+  }
+
+  console.log(`[stations] Loaded ${data.stations.length} stations (updated: ${data.updated})`);
+  window.CIK_USA_STATIONS = data;
+}
+
+loadStations();
+</script>
+</body>
+</html>
