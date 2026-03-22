@@ -1,5 +1,6 @@
 """
-parse_stations.py — parse zayavlenia.txt and write data/stations.json
+parse_stations.py — parse zayavlenia.txt and write data/sections_2026.json
+                    also converts bulgarian_stations_2024.csv → data/sections_2024.json
 
 Input format (one line per station):
     Location name (count)
@@ -16,10 +17,11 @@ from pathlib import Path
 from datetime import datetime, timezone
 from collections import defaultdict
 
-ROOT        = Path(__file__).parent.parent
-INPUT_FILE  = ROOT / 'zayavlenia.txt'
-CSV_FILE    = ROOT / 'bulgarian_stations_2024.csv'
-OUTPUT_FILE = ROOT / 'data' / 'stations.json'
+ROOT         = Path(__file__).parent.parent
+INPUT_FILE   = ROOT / 'zayavlenia.txt'
+CSV_FILE     = ROOT / 'bulgarian_stations_2024.csv'
+OUT_2024     = ROOT / 'data' / 'sections_2024.json'
+OUT_2026     = ROOT / 'data' / 'sections_2026.json'
 
 LINE_RE = re.compile(r'^(.+?)\s+\((\d+)\)\s*$')
 
@@ -125,14 +127,28 @@ def load_csv():
     with open(CSV_FILE, encoding='utf-8') as f:
         for row in csv.DictReader(f):
             stations[row['id']] = {
-                'id':        row['id'],
                 'name':      row['name'],
                 'lat':       float(row['lat']),
                 'lng':       float(row['lng']),
-                'voters_2024': int(row['voters']),
                 'mandatory': row['mandatory'] == 'true',
+                'voters':    int(row['voters']),
             }
     return stations
+
+
+def write_json(path, stations):
+    total = sum(s['voters'] for s in stations)
+    stations_sorted = sorted(stations, key=lambda s: s['voters'], reverse=True)
+    path.parent.mkdir(exist_ok=True)
+    path.write_text(
+        json.dumps({
+            'updated':  datetime.now(timezone.utc).isoformat(),
+            'total':    total,
+            'stations': stations_sorted,
+        }, ensure_ascii=False, indent=2),
+        encoding='utf-8'
+    )
+    print(f'Written {len(stations_sorted)} stations ({total} voters) → {path.name}')
 
 
 def main():
@@ -142,7 +158,10 @@ def main():
 
     csv_stations = load_csv()
 
-    # Parse zayavlenia lines
+    # ── sections_2024.json ────────────────────────────────────────────────────
+    write_json(OUT_2024, list(csv_stations.values()))
+
+    # ── Parse zayavlenia.txt ──────────────────────────────────────────────────
     raw = []
     skipped = []
     for line in INPUT_FILE.read_text(encoding='utf-8').splitlines():
@@ -160,65 +179,59 @@ def main():
         for s in skipped:
             print(f'  {s}')
 
-    # Group by CSV id (matched) or clean name (unmatched), merging duplicates
-    merged_csv   = defaultdict(lambda: {'count_2026': 0, 'zayavlenia': []})
-    merged_extra = defaultdict(lambda: {'count_2026': 0, 'zayavlenia': []})
+    # Each group tracks: total voters, and the zayavlenia name with the most voters
+    # merged_csv  keyed by csv_id
+    # merged_extra keyed by clean name from UNMATCHED_COORDS
+    merged_csv   = defaultdict(lambda: {'voters': 0, 'best_name': '', 'best_count': 0})
+    merged_extra = defaultdict(lambda: {'voters': 0, 'best_name': '', 'best_count': 0})
     truly_unmatched = []
 
     for entry in raw:
         csv_id = MAPPING.get(entry['name'])
         if csv_id:
-            merged_csv[csv_id]['count_2026']    += entry['count']
-            merged_csv[csv_id]['zayavlenia'].append(entry['name'])
+            g = merged_csv[csv_id]
+            g['voters'] += entry['count']
+            if entry['count'] > g['best_count']:
+                g['best_name']  = entry['name']
+                g['best_count'] = entry['count']
         elif entry['name'] in UNMATCHED_COORDS:
-            key = UNMATCHED_COORDS[entry['name']]['name']   # clean name as merge key
-            merged_extra[key]['count_2026']    += entry['count']
-            merged_extra[key]['zayavlenia'].append(entry['name'])
-            merged_extra[key].update(UNMATCHED_COORDS[entry['name']])
+            key = UNMATCHED_COORDS[entry['name']]['name']
+            g = merged_extra[key]
+            g['voters'] += entry['count']
+            g.update(UNMATCHED_COORDS[entry['name']])   # lat/lng/name (clean fallback)
+            if entry['count'] > g['best_count']:
+                g['best_name']  = entry['name']
+                g['best_count'] = entry['count']
         else:
             truly_unmatched.append(entry)
 
-    # Build output stations list — uniform format: name, lat, lng, mandatory, voters
-    stations = []
-    for csv_id, data in merged_csv.items():
-        base = csv_stations[csv_id]
-        stations.append({
-            'name':      base['name'],
-            'lat':       base['lat'],
-            'lng':       base['lng'],
-            'mandatory': base['mandatory'],
-            'voters':    data['count_2026'],
-        })
-    for data in merged_extra.values():
-        stations.append({
-            'name':      data['name'],
-            'lat':       data['lat'],
-            'lng':       data['lng'],
-            'mandatory': False,
-            'voters':    data['count_2026'],
-        })
-
-    stations.sort(key=lambda s: s['voters'], reverse=True)
-
-    total = sum(s['voters'] for s in stations)
-    print(f'Stations: {len(stations)} ({len(merged_csv)} matched to 2024, {len(merged_extra)} geocoded)')
-    print(f'Total registrations: {total}')
     if truly_unmatched:
-        print(f'WARNING — still unmatched ({len(truly_unmatched)}):')
+        print(f'WARNING — unresolved entries ({len(truly_unmatched)}):')
         for u in truly_unmatched:
             print(f'  {u["name"]} ({u["count"]})')
 
-    OUTPUT_FILE.parent.mkdir(exist_ok=True)
-    result = {
-        'updated':  datetime.now(timezone.utc).isoformat(),
-        'total':    total,
-        'stations': stations,
-    }
-    OUTPUT_FILE.write_text(
-        json.dumps(result, ensure_ascii=False, indent=2),
-        encoding='utf-8'
-    )
-    print(f'Written to {OUTPUT_FILE}')
+    # ── sections_2026.json ────────────────────────────────────────────────────
+    stations_2026 = []
+    for csv_id, g in merged_csv.items():
+        base = csv_stations[csv_id]
+        stations_2026.append({
+            'name':      g['best_name'],
+            'lat':       base['lat'],
+            'lng':       base['lng'],
+            'mandatory': base['mandatory'],
+            'voters':    g['voters'],
+        })
+    for g in merged_extra.values():
+        stations_2026.append({
+            'name':      g['best_name'],
+            'lat':       g['lat'],
+            'lng':       g['lng'],
+            'mandatory': False,
+            'voters':    g['voters'],
+        })
+
+    print(f'2026: {len(merged_csv)} matched to 2024, {len(merged_extra)} geocoded')
+    write_json(OUT_2026, stations_2026)
 
 
 if __name__ == '__main__':

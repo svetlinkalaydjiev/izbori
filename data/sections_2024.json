@@ -1,0 +1,377 @@
+{
+  "updated": "2026-03-22T20:15:33.499036+00:00",
+  "total": 8924,
+  "stations": [
+    {
+      "name": "Des Plaines 1 IL",
+      "lat": 42.0266,
+      "lng": -87.8935,
+      "mandatory": false,
+      "voters": 650
+    },
+    {
+      "name": "Arlington Heights IL",
+      "lat": 42.0505,
+      "lng": -87.9879,
+      "mandatory": false,
+      "voters": 532
+    },
+    {
+      "name": "New York — Consulate NY",
+      "lat": 40.7646,
+      "lng": -73.9675,
+      "mandatory": true,
+      "voters": 517
+    },
+    {
+      "name": "Embassy — Washington DC",
+      "lat": 38.9124,
+      "lng": -77.0485,
+      "mandatory": true,
+      "voters": 449
+    },
+    {
+      "name": "Mount Prospect IL",
+      "lat": 42.0445,
+      "lng": -87.942,
+      "mandatory": false,
+      "voters": 445
+    },
+    {
+      "name": "Atlanta (Marietta) GA",
+      "lat": 33.916,
+      "lng": -84.4673,
+      "mandatory": false,
+      "voters": 390
+    },
+    {
+      "name": "Las Vegas NV",
+      "lat": 36.1084,
+      "lng": -115.2616,
+      "mandatory": false,
+      "voters": 380
+    },
+    {
+      "name": "Seattle (Edmonds) WA",
+      "lat": 47.7949,
+      "lng": -122.3737,
+      "mandatory": false,
+      "voters": 257
+    },
+    {
+      "name": "Boston — Newton MA",
+      "lat": 42.3579,
+      "lng": -71.1843,
+      "mandatory": false,
+      "voters": 249
+    },
+    {
+      "name": "St Petersburg FL",
+      "lat": 27.8569,
+      "lng": -82.6493,
+      "mandatory": false,
+      "voters": 224
+    },
+    {
+      "name": "Los Angeles — Consulate CA",
+      "lat": 34.0479,
+      "lng": -118.462,
+      "mandatory": true,
+      "voters": 214
+    },
+    {
+      "name": "Sunnyvale (San Jose) CA",
+      "lat": 37.3499,
+      "lng": -122.0576,
+      "mandatory": false,
+      "voters": 200
+    },
+    {
+      "name": "Boston — Billerica MA",
+      "lat": 42.5612,
+      "lng": -71.2961,
+      "mandatory": false,
+      "voters": 194
+    },
+    {
+      "name": "Des Plaines 3 IL",
+      "lat": 42.036,
+      "lng": -87.895,
+      "mandatory": false,
+      "voters": 185
+    },
+    {
+      "name": "Fort Lauderdale (Miami) FL",
+      "lat": 26.1697,
+      "lng": -80.0996,
+      "mandatory": false,
+      "voters": 178
+    },
+    {
+      "name": "Des Plaines 2 IL",
+      "lat": 42.0381,
+      "lng": -87.8909,
+      "mandatory": false,
+      "voters": 159
+    },
+    {
+      "name": "Denver CO",
+      "lat": 39.6913,
+      "lng": -104.94,
+      "mandatory": false,
+      "voters": 147
+    },
+    {
+      "name": "Charlotte (Matthews) NC",
+      "lat": 35.1448,
+      "lng": -80.719,
+      "mandatory": false,
+      "voters": 145
+    },
+    {
+      "name": "Altamonte Springs (Orlando) FL",
+      "lat": 28.653,
+      "lng": -81.4308,
+      "mandatory": false,
+      "voters": 144
+    },
+    {
+      "name": "Phoenix AZ",
+      "lat": 33.4873,
+      "lng": -112.027,
+      "mandatory": false,
+      "voters": 143
+    },
+    {
+      "name": "Irvine (Tustin) CA",
+      "lat": 33.7211,
+      "lng": -117.8066,
+      "mandatory": false,
+      "voters": 141
+    },
+    {
+      "name": "Detroit (Troy) MI",
+      "lat": 42.5642,
+      "lng": -83.1189,
+      "mandatory": false,
+      "voters": 138
+    },
+    {
+      "name": "St Louis (Ellisville) MO",
+      "lat": 38.6009,
+      "lng": -90.5863,
+      "mandatory": false,
+      "voters": 133
+    },
+    {
+      "name": "Norwalk (Southport) CT",
+      "lat": 41.1403,
+      "lng": -73.2848,
+      "mandatory": false,
+      "voters": 130
+    },
+    {
+      "name": "San Francisco CA",
+      "lat": 37.7623,
+      "lng": -122.4713,
+      "mandatory": false,
+      "voters": 130
+    },
+    {
+      "name": "Philadelphia (Broomall) PA",
+      "lat": 39.981,
+      "lng": -75.3617,
+      "mandatory": false,
+      "voters": 128
+    },
+    {
+      "name": "New York — Queens NY",
+      "lat": 40.7334,
+      "lng": -73.8627,
+      "mandatory": false,
+      "voters": 124
+    },
+    {
+      "name": "New Brunswick NJ",
+      "lat": 40.4958,
+      "lng": -74.4447,
+      "mandatory": false,
+      "voters": 121
+    },
+    {
+      "name": "San Diego CA",
+      "lat": 32.8976,
+      "lng": -117.1246,
+      "mandatory": false,
+      "voters": 120
+    },
+    {
+      "name": "Hinsdale IL",
+      "lat": 41.7938,
+      "lng": -87.936,
+      "mandatory": false,
+      "voters": 119
+    },
+    {
+      "name": "Concord (Martinez) CA",
+      "lat": 38.0143,
+      "lng": -122.1181,
+      "mandatory": false,
+      "voters": 117
+    },
+    {
+      "name": "Houston TX",
+      "lat": 29.766,
+      "lng": -95.3777,
+      "mandatory": false,
+      "voters": 115
+    },
+    {
+      "name": "Dallas TX",
+      "lat": 32.9278,
+      "lng": -96.8967,
+      "mandatory": false,
+      "voters": 105
+    },
+    {
+      "name": "Naples FL",
+      "lat": 26.2093,
+      "lng": -81.8016,
+      "mandatory": false,
+      "voters": 103
+    },
+    {
+      "name": "Hyannis / Cape Cod MA",
+      "lat": 41.7037,
+      "lng": -70.3086,
+      "mandatory": false,
+      "voters": 101
+    },
+    {
+      "name": "Austin TX",
+      "lat": 30.4152,
+      "lng": -97.7441,
+      "mandatory": false,
+      "voters": 94
+    },
+    {
+      "name": "Portland OR",
+      "lat": 45.5625,
+      "lng": -122.6892,
+      "mandatory": false,
+      "voters": 92
+    },
+    {
+      "name": "Chicago — Consulate IL",
+      "lat": 41.896,
+      "lng": -87.6238,
+      "mandatory": true,
+      "voters": 91
+    },
+    {
+      "name": "Minneapolis (Woodbury) MN",
+      "lat": 44.9228,
+      "lng": -92.9696,
+      "mandatory": false,
+      "voters": 91
+    },
+    {
+      "name": "Sacramento CA",
+      "lat": 38.5884,
+      "lng": -121.4195,
+      "mandatory": false,
+      "voters": 83
+    },
+    {
+      "name": "Cincinnati OH",
+      "lat": 39.1839,
+      "lng": -84.4235,
+      "mandatory": false,
+      "voters": 83
+    },
+    {
+      "name": "Atlantic City area NJ",
+      "lat": 39.3817,
+      "lng": -74.6072,
+      "mandatory": false,
+      "voters": 82
+    },
+    {
+      "name": "Pittsburgh (W Homestead) PA",
+      "lat": 40.4018,
+      "lng": -79.9178,
+      "mandatory": false,
+      "voters": 79
+    },
+    {
+      "name": "Richmond VA",
+      "lat": 37.6151,
+      "lng": -77.4919,
+      "mandatory": false,
+      "voters": 72
+    },
+    {
+      "name": "Indianapolis IN",
+      "lat": 39.7872,
+      "lng": -86.2095,
+      "mandatory": false,
+      "voters": 69
+    },
+    {
+      "name": "Jacksonville FL",
+      "lat": 30.18,
+      "lng": -81.6305,
+      "mandatory": false,
+      "voters": 63
+    },
+    {
+      "name": "Buffalo (Tonawanda) NY",
+      "lat": 43.017,
+      "lng": -78.8824,
+      "mandatory": false,
+      "voters": 62
+    },
+    {
+      "name": "Virginia Beach VA",
+      "lat": 36.845,
+      "lng": -75.9921,
+      "mandatory": false,
+      "voters": 62
+    },
+    {
+      "name": "Schiller Park IL",
+      "lat": 41.9555,
+      "lng": -87.8827,
+      "mandatory": false,
+      "voters": 60
+    },
+    {
+      "name": "Nantucket MA",
+      "lat": 41.2855,
+      "lng": -70.1013,
+      "mandatory": false,
+      "voters": 59
+    },
+    {
+      "name": "Salt Lake City UT",
+      "lat": 40.7578,
+      "lng": -111.892,
+      "mandatory": false,
+      "voters": 59
+    },
+    {
+      "name": "Milwaukee (Oak Creek) WI",
+      "lat": 42.8908,
+      "lng": -87.8831,
+      "mandatory": false,
+      "voters": 51
+    },
+    {
+      "name": "Nashville TN",
+      "lat": 36.1583,
+      "lng": -86.7742,
+      "mandatory": false,
+      "voters": 45
+    }
+  ]
+}

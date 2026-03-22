@@ -1,0 +1,54 @@
+id,name,lat,lng,voters,mandatory
+321070453,Embassy — Washington DC,38.9124,-77.0485,449,true
+321070465,Los Angeles — Consulate CA,34.0479,-118.4620,214,true
+321070475,New York — Consulate NY,40.7646,-73.9675,517,true
+321070494,Chicago — Consulate IL,41.8960,-87.6238,91,true
+321070446,Arlington Heights IL,42.0505,-87.9879,532,false
+321070447,Atlanta (Marietta) GA,33.9160,-84.4673,390,false
+321070448,Atlantic City area NJ,39.3817,-74.6072,82,false
+321070449,Boston — Billerica MA,42.5612,-71.2961,194,false
+321070450,Boston — Newton MA,42.3579,-71.1843,249,false
+321070451,Philadelphia (Broomall) PA,39.9810,-75.3617,128,false
+321070452,Buffalo (Tonawanda) NY,43.0170,-78.8824,62,false
+321070454,Virginia Beach VA,36.8450,-75.9921,62,false
+321070455,Dallas TX,32.9278,-96.8967,105,false
+321070456,Denver CO,39.6913,-104.9400,147,false
+321070457,Des Plaines 1 IL,42.0266,-87.8935,650,false
+321070458,Des Plaines 2 IL,42.0381,-87.8909,159,false
+321070459,Des Plaines 3 IL,42.0360,-87.8950,185,false
+321070460,Detroit (Troy) MI,42.5642,-83.1189,138,false
+321070461,Jacksonville FL,30.1800,-81.6305,63,false
+321070462,Indianapolis IN,39.7872,-86.2095,69,false
+321070463,Concord (Martinez) CA,38.0143,-122.1181,117,false
+321070464,Las Vegas NV,36.1084,-115.2616,380,false
+321070466,Mount Prospect IL,42.0445,-87.9420,445,false
+321070467,Fort Lauderdale (Miami) FL,26.1697,-80.0996,178,false
+321070468,Milwaukee (Oak Creek) WI,42.8908,-87.8831,51,false
+321070469,Minneapolis (Woodbury) MN,44.9228,-92.9696,91,false
+321070470,Nantucket MA,41.2855,-70.1013,59,false
+321070471,Nashville TN,36.1583,-86.7742,45,false
+321070472,Naples FL,26.2093,-81.8016,103,false
+321070473,Norwalk (Southport) CT,41.1403,-73.2848,130,false
+321070474,New Brunswick NJ,40.4958,-74.4447,121,false
+321070476,New York — Queens NY,40.7334,-73.8627,124,false
+321070477,Austin TX,30.4152,-97.7441,94,false
+321070478,Pittsburgh (W Homestead) PA,40.4018,-79.9178,79,false
+321070479,Portland OR,45.5625,-122.6892,92,false
+321070480,Richmond VA,37.6151,-77.4919,72,false
+321070481,Sacramento CA,38.5884,-121.4195,83,false
+321070482,San Diego CA,32.8976,-117.1246,120,false
+321070483,San Francisco CA,37.7623,-122.4713,130,false
+321070484,St Louis (Ellisville) MO,38.6009,-90.5863,133,false
+321070485,St Petersburg FL,27.8569,-82.6493,224,false
+321070486,Seattle (Edmonds) WA,47.7949,-122.3737,257,false
+321070487,Cincinnati OH,39.1839,-84.4235,83,false
+321070488,Salt Lake City UT,40.7578,-111.8920,59,false
+321070489,Sunnyvale (San Jose) CA,37.3499,-122.0576,200,false
+321070490,Phoenix AZ,33.4873,-112.0270,143,false
+321070491,Hyannis / Cape Cod MA,41.7037,-70.3086,101,false
+321070492,Hinsdale IL,41.7938,-87.9360,119,false
+321070493,Houston TX,29.7660,-95.3777,115,false
+321070495,Charlotte (Matthews) NC,35.1448,-80.7190,145,false
+321070496,Schiller Park IL,41.9555,-87.8827,60,false
+321070497,Irvine (Tustin) CA,33.7211,-117.8066,141,false
+321070445,Altamonte Springs (Orlando) FL,28.6530,-81.4308,144,false
