@@ -420,6 +420,13 @@ function popupHtml(s) {
     body += overCap
       ? `<div class="popup-sub" style="color:#e8913a">Over capacity — capped from ${s.rawTotal.toLocaleString()}</div>`
       : `<div class="popup-sub">${s.rawTotal.toLocaleString()} expected · ${maxCapacity} capacity</div>`;
+    // Raw registration / historical figures — same fields shown on closed-station popups
+    if (s.v26 > 0 || s.v24 > 0) {
+      const parts = [];
+      if (s.v26 > 0) parts.push(`${s.v26} заявления 2026`);
+      if (s.v24 > 0) parts.push(`${s.v24} voters in 2024`);
+      body += `<div class="popup-sub">${parts.join(' · ')}</div>`;
+    }
 
     // Contributor table (scrollable)
     body += `<div style="margin-top:7px;max-height:190px;overflow-y:auto;">
