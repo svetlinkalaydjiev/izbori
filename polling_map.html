@@ -72,8 +72,6 @@ header h1 {
 .toggle-btn:disabled { opacity: 0.4; cursor: default; }
 .rerun-btn { border-color: #4a5568; color: #6b7280; }
 .rerun-btn:hover:not(:disabled) { border-color: #c8a84b !important; color: #c8a84b !important; }
-.scenario-group { display: flex; align-items: center; gap: 5px; }
-.scenario-label { font-size: 0.6rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
 
 /* ── Map ── */
 #map { flex: 1; width: 100%; }
@@ -135,7 +133,7 @@ header h1 {
   </div>
   <div class="header-right">
     <div class="legend">
-      <div class="legend-item"><div class="leg-dot" style="background:#4bc84b"></div><span id="legend-open">Open (optimal 20)</span></div>
+      <div class="legend-item"><div class="leg-dot" style="background:#4bc84b"></div>Open (optimal 20)</div>
       <div class="legend-item"><div class="leg-dot" style="background:#c8a84b"></div>Embassy</div>
       <div class="legend-item"><div class="leg-dot" style="background:#4b8ec8"></div>Served</div>
       <div class="legend-item"><div class="leg-dot" style="background:#e8913a"></div>Far</div>
@@ -159,11 +157,6 @@ header h1 {
       </div>
     </div>
     <button class="toggle-btn rerun-btn" id="btn-rerun" onclick="rerunOptimization()">Rerun</button>
-    <div class="scenario-group">
-      <span class="scenario-label">Scenario</span>
-      <button class="toggle-btn active" id="btn-sc-ours"     onclick="setScenario('ours')">Ours</button>
-      <button class="toggle-btn"        id="btn-sc-coworker" onclick="setScenario('coworker')" disabled>Coworker's</button>
-    </div>
     <button class="toggle-btn" id="btn-2024" onclick="toggle2024(this)">Show 2024</button>
   </div>
 </header>
@@ -221,13 +214,10 @@ const TOP_N          = 20;    // max non-mandatory sections to open
 let dLow        = 20;    // below this distance: 100% travel probability
 let dHigh       = 200;   // above this distance: 0% travel probability
 let maxCapacity = 800;   // max voters served at a single open location
-let show2024        = false;
-let voterPool       = null;  // all locations with combined voter counts
-let selected        = null;  // currently displayed selection
-let algorithmSelected = null; // cached result from our optimisation
-let coworkerScenario  = null; // loaded from sections_coworker_scenario.json
-let activeScenario    = 'ours';
-let maxV26          = 1;
+let show2024  = false;
+let voterPool = null;  // all locations with combined voter counts
+let selected  = null;  // the 20 optimally chosen station objects
+let maxV26    = 1;
 
 // ── Map setup ─────────────────────────────────────────────────────────────────
 const map = L.map('map', { center: [38.5, -96], zoom: 4 });
@@ -415,7 +405,7 @@ function pinIcon(s) {
 function popupHtml(s) {
   const labels = {
     mandatory: 'Embassy / Consulate',
-    open:      activeScenario === 'coworker' ? 'Open — Coworker\'s' : 'Open — Optimal 20',
+    open:      'Open — Optimal 20',
     served:    'Served',
     atrisk:    'Far — Reachable',
     lost:      'Disenfranchised',
@@ -541,8 +531,6 @@ function render2026() {
   document.getElementById('st-atrisk').textContent   = fmt(uAtrisk)   + pct(uAtrisk);
   document.getElementById('st-lost').textContent     = fmt(uLost)     + pct(uLost);
   document.getElementById('st-expected').textContent = fmt(uExpected) + pct(uExpected);
-  document.getElementById('legend-open').textContent =
-    activeScenario === 'coworker' ? 'Open (coworker\'s)' : 'Open (optimal 20)';
 }
 
 // ── Render 2024 overlay as heatmap ───────────────────────────────────────────
@@ -565,40 +553,6 @@ function render2024(stations) {
   if (show2024) map.addLayer(layer2024);
 }
 
-// ── Scenario management ───────────────────────────────────────────────────────
-// Match each coworker open station to the nearest pool entry (≤30 mi).
-function matchScenarioToPool(pool, openStations) {
-  return openStations.map(so => {
-    let best = null, bestD = Infinity;
-    for (const p of pool) {
-      const d = distMiles(so, p);
-      if (d < bestD) { bestD = d; best = p; }
-    }
-    return bestD <= 30 ? best : null;
-  }).filter(Boolean);
-}
-
-function setScenario(which) {
-  if (!voterPool) return;
-  activeScenario = which;
-  document.getElementById('btn-sc-ours').classList.toggle('active', which === 'ours');
-  document.getElementById('btn-sc-coworker').classList.toggle('active', which === 'coworker');
-  document.getElementById('btn-rerun').disabled = (which !== 'ours');
-
-  if (which === 'coworker' && coworkerScenario) {
-    selected = matchScenarioToPool(voterPool, coworkerScenario.open_stations);
-    render2026();
-  } else {
-    // Switch back to our algorithm — use cached result or rerun
-    if (algorithmSelected) {
-      selected = algorithmSelected;
-      render2026();
-    } else {
-      rerunOptimization();
-    }
-  }
-}
-
 // ── Controls ──────────────────────────────────────────────────────────────────
 function onDlowSlider(val) {
   dLow = Math.min(Number(val), dHigh - 10);
@@ -619,13 +573,12 @@ function onCapSlider(val) {
 }
 
 function rerunOptimization() {
-  if (!voterPool || activeScenario !== 'ours') return;
+  if (!voterPool) return;
   const btn = document.getElementById('btn-rerun');
   btn.textContent = 'Running…';
   btn.disabled = true;
   setTimeout(() => {
-    algorithmSelected = optimizeSelections(voterPool);
-    selected = algorithmSelected;
+    selected = optimizeSelections(voterPool);
     render2026();
     btn.textContent = 'Rerun';
     btn.disabled = false;
@@ -643,10 +596,9 @@ function toggle2024(btn) {
 // ── Load ──────────────────────────────────────────────────────────────────────
 async function loadData() {
   try {
-    const [r26, r24, rCW] = await Promise.all([
+    const [r26, r24] = await Promise.all([
       fetch('data/sections_2026.json'),
       fetch('data/sections_2024.json'),
-      fetch('data/sections_coworker_scenario.json').catch(() => null),
     ]);
     if (!r26.ok) throw new Error(`sections_2026.json: HTTP ${r26.status}`);
     if (!r24.ok) throw new Error(`sections_2024.json: HTTP ${r24.status}`);
@@ -654,19 +606,13 @@ async function loadData() {
     const d26 = await r26.json();
     const d24 = await r24.json();
 
-    if (rCW && rCW.ok) {
-      coworkerScenario = await rCW.json();
-      document.getElementById('btn-sc-coworker').disabled = false;
-    }
-
     voterPool = buildVoterPool(d26.stations, d24.stations);
     maxV26    = Math.max(...voterPool.map(s => s.v26));
 
     document.getElementById('subtitle').textContent =
       `2026: ${d26.total.toLocaleString()} заявления · ${d26.stations.length} locations`;
 
-    algorithmSelected = optimizeSelections(voterPool);
-    selected = algorithmSelected;
+    selected = optimizeSelections(voterPool);
     render2026();
     render2024(d24.stations);
 
