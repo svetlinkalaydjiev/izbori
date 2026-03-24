@@ -45,6 +45,7 @@ MAPPING = {
     "Barnstable, MA":                                                              "321070491",
     "Хаянис - Кейп Код":                                                          "321070491",
     "Нантакет МА, САЩ":                                                           "321070470",
+    "Нантъкет":                                                                    "321070470",
     "Queens New York":                                                             "321070476",
     "Алфа Арт галерия Ню Бронсуик, Ню Джърси":                                   "321070474",
     "Ukrainian American Club of Southport, 279 King Drive, Southport, CT":        "321070473",
@@ -119,6 +120,7 @@ UNMATCHED_COORDS = {
     "Myrtle Beach SC":   {"name": "Myrtle Beach SC",   "lat": 33.6891, "lng": -78.8867},
     "Roanoke, VA":       {"name": "Roanoke VA",        "lat": 37.2710, "lng": -79.9414},
     "Сиракюз, Ню Йорк":  {"name": "Syracuse NY",       "lat": 43.0481, "lng": -76.1474},
+    "Чарлстън, Южна Каролина": {"name": "Charleston SC", "lat": 32.7765, "lng": -79.9311},
 }
 
 
