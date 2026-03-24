@@ -346,8 +346,7 @@ async function loadData() {
     const zav2026     = data.sections_27102024.reduce((s, r) => s + (r.Заявления || 0), 0);
     const zavLocs2026 = data.sections_27102024.filter(r => (r.Заявления || 0) > 0).length;
     document.getElementById('subtitle').textContent =
-      `October 27, 2024 · ${total.toLocaleString()} voters · ${nOpen} open + ${nEmb} embassy/consulate` +
-      `   ·   2026: ${zav2026.toLocaleString()} заявления · ${zavLocs2026} locations`;
+      `2026: ${zav2026.toLocaleString()} заявления · ${zavLocs2026} locations`;
 
   } catch (err) {
     document.getElementById('subtitle').textContent = 'Error: ' + err.message;
