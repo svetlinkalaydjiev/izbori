@@ -6,7 +6,6 @@
 <title>Polling Station Map</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
@@ -152,7 +151,6 @@ header h1 {
 .badge-served    { background: #0e1a2a; color: #4b8ec8; border: 1px solid #2a4a6a; }
 .badge-atrisk    { background: #2a1a08; color: #e8913a; border: 1px solid #6a4010; }
 .badge-lost      { background: #3a1a1a; color: #c84b4b; border: 1px solid #6a2a2a; }
-.badge-2024      { background: #0e1a2a; color: #4b7ec8; border: 1px solid #2a3a6a; }
 
 .leaflet-control-attribution {
   background: #161920cc !important; color: #6b7280 !important; font-size: 10px !important;
@@ -193,7 +191,6 @@ header h1 {
       </div>
     </div>
     <button class="toggle-btn rerun-btn" id="btn-rerun" onclick="rerunOptimization()">Rerun</button>
-    <button class="toggle-btn" id="btn-2024" onclick="toggle2024(this)">Show 2024</button>
     <button class="toggle-btn" onclick="showSummary()">Summary</button>
   </div>
 </header>
@@ -251,7 +248,6 @@ const TOP_N          = 20;    // max non-mandatory sections to open
 let dLow        = 25;    // below this distance: 100% travel probability
 let dHigh       = 200;   // above this distance: 0% travel probability
 let maxCapacity = 900;   // max voters served at a single open location
-let show2024  = false;
 let voterPool = null;  // all locations with combined voter counts
 let selected  = null;  // the 20 optimally chosen station objects
 let maxV26    = 1;
@@ -263,7 +259,6 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 }).addTo(map);
 
 const layer2026 = L.layerGroup().addTo(map);
-let layer2024 = null;
 
 // ── Distance (Haversine) ──────────────────────────────────────────────────────
 function distMiles(a, b) {
@@ -570,26 +565,6 @@ function render2026() {
   document.getElementById('st-expected').textContent = fmt(uExpected) + pct(uExpected);
 }
 
-// ── Render 2024 overlay as heatmap ───────────────────────────────────────────
-function render2024(stations) {
-  if (layer2024) map.removeLayer(layer2024);
-  const maxV   = Math.max(...stations.map(s => s.voters));
-  const points = stations.map(s => [s.lat, s.lng, s.voters / maxV]);
-  layer2024 = L.heatLayer(points, {
-    radius:     18,
-    blur:       14,
-    max:        0.7,
-    minOpacity: 0.2,
-    gradient: {
-      0.00: 'rgba(10,40,140,0)',
-      0.25: 'rgba(40,110,210,0.45)',
-      0.55: 'rgba(90,165,240,0.70)',
-      1.00: 'rgba(180,225,255,0.92)',
-    },
-  });
-  if (show2024) map.addLayer(layer2024);
-}
-
 // ── Controls ──────────────────────────────────────────────────────────────────
 function onDlowSlider(val) {
   dLow = Math.min(Number(val), dHigh - 10);
@@ -622,14 +597,6 @@ function rerunOptimization() {
   }, 10);
 }
 
-function toggle2024(btn) {
-  show2024 = !show2024;
-  btn.classList.toggle('active', show2024);
-  btn.textContent = show2024 ? 'Hide 2024' : 'Show 2024';
-  if (!layer2024) return;
-  if (show2024) map.addLayer(layer2024); else map.removeLayer(layer2024);
-}
-
 // ── Load ──────────────────────────────────────────────────────────────────────
 async function loadData() {
   try {
@@ -651,7 +618,6 @@ async function loadData() {
 
     selected = optimizeSelections(voterPool);
     render2026();
-    render2024(d24.stations);
 
   } catch (err) {
     console.error('[map] Failed to load data:', err);
