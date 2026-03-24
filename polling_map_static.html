@@ -260,14 +260,9 @@ let rawData = null;
 // ── Load and render ───────────────────────────────────────────────────────────
 async function loadData() {
   try {
-    const [r, r26] = await Promise.all([
-      fetch('sections_outputs_from_xlsx.json'),
-      fetch('data/sections_2026.json'),
-    ]);
-    if (!r.ok)   throw new Error(`sections_outputs_from_xlsx.json: HTTP ${r.status}`);
-    if (!r26.ok) throw new Error(`sections_2026.json: HTTP ${r26.status}`);
+    const r = await fetch('sections_outputs_from_xlsx.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = rawData = await r.json();
-    const d26  = await r26.json();
 
     // Total voter pool from summary_scalars
     const scalars = Object.fromEntries(data.summary_scalars.map(s => [s.metric, s.value]));
@@ -348,9 +343,11 @@ async function loadData() {
     document.getElementById('st-atrisk').textContent  = uAtrisk.toLocaleString() + pct(uAtrisk);
     document.getElementById('st-lost').textContent    = uLost.toLocaleString()   + pct(uLost);
 
+    const zav2026     = data.sections_27102024.reduce((s, r) => s + (r.Заявления || 0), 0);
+    const zavLocs2026 = data.sections_27102024.filter(r => (r.Заявления || 0) > 0).length;
     document.getElementById('subtitle').textContent =
       `October 27, 2024 · ${total.toLocaleString()} voters · ${nOpen} open + ${nEmb} embassy/consulate` +
-      `   ·   2026: ${d26.total.toLocaleString()} заявления · ${d26.stations.length} locations`;
+      `   ·   2026: ${zav2026.toLocaleString()} заявления · ${zavLocs2026} locations`;
 
   } catch (err) {
     document.getElementById('subtitle').textContent = 'Error: ' + err.message;
