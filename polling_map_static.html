@@ -148,8 +148,8 @@ header h1 {
       <div class="legend-item"><div class="leg-dot" style="background:#4bc84b"></div>Open</div>
       <div class="legend-item"><div class="leg-dot" style="background:#3d8b5e"></div>Embassy / Consulate</div>
       <div class="legend-item"><div class="leg-dot" style="background:#4b8ec8"></div>Served (≤60 mi)</div>
-      <div class="legend-item"><div class="leg-dot" style="background:#e8913a"></div>Far (60–100 mi)</div>
-      <div class="legend-item"><div class="leg-dot" style="background:#c84b4b"></div>Disenfranchised (&gt;100 mi)</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#e8913a"></div>Far (60–200 mi)</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#c84b4b"></div>Disenfranchised (&gt;200 mi)</div>
     </div>
     <button class="toggle-btn" onclick="showSummary()">Summary</button>
   </div>
@@ -176,11 +176,11 @@ header h1 {
     <span class="stat-served" id="st-served">—</span>
   </div>
   <div class="stat">
-    <span class="stat-label">Far (60–100 mi)</span>
+    <span class="stat-label">Far (60–200 mi)</span>
     <span class="stat-atrisk" id="st-atrisk">—</span>
   </div>
   <div class="stat">
-    <span class="stat-label">Disenfranchised (&gt;100 mi)</span>
+    <span class="stat-label">Disenfranchised (&gt;200 mi)</span>
     <span class="stat-lost" id="st-lost">—</span>
   </div>
   <div class="stat-note">
@@ -191,7 +191,7 @@ header h1 {
 <script>
 // ── Constants ─────────────────────────────────────────────────────────────────
 const SERVED_MI = 60;
-const FAR_MI    = 100;
+const FAR_MI    = 200;
 
 const STATUS_COLOR = {
   mandatory: '#3d8b5e',
@@ -232,8 +232,8 @@ function popupHtml(s) {
     mandatory: 'Embassy / Consulate',
     open:      'Open',
     served:    'Served — within 60 mi',
-    atrisk:    'Far — 60–100 mi',
-    lost:      'Disenfranchised — over 100 mi',
+    atrisk:    'Far — 60–200 mi',
+    lost:      'Disenfranchised — over 200 mi',
   };
   const badge = `<span class="popup-badge badge-${s.status}">${labels[s.status]}</span><br>`;
   const isOpen = s.status === 'open' || s.status === 'mandatory';
@@ -264,13 +264,12 @@ async function loadData() {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = rawData = await r.json();
 
-    // Pre-compute stats from summary_scalars
+    // Total voter pool from summary_scalars
     const scalars = Object.fromEntries(data.summary_scalars.map(s => [s.metric, s.value]));
-    const total      = Math.round(scalars.total_people);
-    const overFar    = Math.round(scalars.people_over_60);   // >60 mi
-    const overDisenf = Math.round(scalars.people_over_100);  // >100 mi
-    const farOnly    = overFar - overDisenf;                 // 60–100 mi
-    const served     = total - overFar;                      // ≤60 mi
+    const total = Math.round(scalars.total_people);
+
+    // Per-category counts computed from per-station data using SERVED_MI / FAR_MI thresholds
+    let uServed = 0, uAtrisk = 0, uLost = 0;
 
     // Build redirect lookup: Short_Address → {redirectTo, redirMiles}
     const redirectMap = new Map();
@@ -309,7 +308,12 @@ async function loadData() {
         status = miles <= SERVED_MI ? 'served' : miles <= FAR_MI ? 'atrisk' : 'lost';
         label  = s.Общо_27_10_2024;
         votersForSize = 0; // fixed size for closed stations
+        const v = s.Общо_27_10_2024 || 0;
+        if (status === 'served') uServed += v;
+        else if (status === 'atrisk') uAtrisk += v;
+        else uLost += v;
       }
+      if (isOpen) uServed += s.Общо_27_10_2024 || 0;
 
       const redir = redirectMap.get(s.Short_Address);
       const station = {
@@ -330,14 +334,14 @@ async function loadData() {
       .addTo(map);
     }
 
-    // Fill stats panel from pre-computed scalars
+    // Fill stats panel
     const pct = (n) => ` (${(n / total * 100).toFixed(1)}%)`;
     document.getElementById('st-pool').textContent    = total.toLocaleString();
     document.getElementById('st-open').textContent    = nOpen;
     document.getElementById('st-emb').textContent     = nEmb;
-    document.getElementById('st-served').textContent  = served.toLocaleString()  + pct(served);
-    document.getElementById('st-atrisk').textContent  = farOnly.toLocaleString() + pct(farOnly);
-    document.getElementById('st-lost').textContent    = overDisenf.toLocaleString() + pct(overDisenf);
+    document.getElementById('st-served').textContent  = uServed.toLocaleString() + pct(uServed);
+    document.getElementById('st-atrisk').textContent  = uAtrisk.toLocaleString() + pct(uAtrisk);
+    document.getElementById('st-lost').textContent    = uLost.toLocaleString()   + pct(uLost);
 
     document.getElementById('subtitle').textContent =
       `October 27, 2024 · ${total.toLocaleString()} voters · ${nOpen} open + ${nEmb} embassy/consulate`;
