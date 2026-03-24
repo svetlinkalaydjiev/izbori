@@ -73,6 +73,42 @@ header h1 {
 .rerun-btn { border-color: #4a5568; color: #6b7280; }
 .rerun-btn:hover:not(:disabled) { border-color: #c8a84b !important; color: #c8a84b !important; }
 
+/* ── Summary modal ── */
+#summary-modal {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); z-index: 2000;
+  align-items: center; justify-content: center;
+}
+#summary-modal.open { display: flex; }
+#summary-box {
+  background: #161920; border: 1px solid #2a2f3d;
+  padding: 16px 20px; max-width: 620px; width: 92%;
+  max-height: 82vh; overflow-y: auto; position: relative;
+}
+.summary-close {
+  position: absolute; top: 10px; right: 14px;
+  background: none; border: none; color: #6b7280;
+  font-size: 18px; cursor: pointer; line-height: 1;
+}
+.summary-close:hover { color: #e8e4d9; }
+.summary-heading { font-family: 'Playfair Display', serif; font-size: 1rem; color: #c8a84b; margin-bottom: 12px; }
+.summary-sub { font-size: 0.6rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; margin: 12px 0 4px; }
+.summary-hdr {
+  display: flex; gap: 8px; font-size: 0.55rem; color: #4a5568;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  border-bottom: 1px solid #2a2f3d; padding-bottom: 3px; margin-bottom: 2px;
+}
+.summary-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.6rem; padding: 3px 0; border-bottom: 1px solid #1a1f2a;
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-idx  { color: #4a5568; min-width: 2ch; text-align: right; flex-shrink: 0; }
+.summary-name { flex: 1; color: #e8e4d9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.summary-emb  { font-size: 0.5rem; color: #c8a84b; background: #3a2a0a; border: 1px solid #6a5a2a; padding: 1px 4px; border-radius: 2px; flex-shrink: 0; }
+.summary-zav  { color: #4bc84b; min-width: 4ch; text-align: right; flex-shrink: 0; }
+.summary-v24  { color: #8a95a8; min-width: 4ch; text-align: right; flex-shrink: 0; }
+
 /* ── Map ── */
 #map { flex: 1; width: 100%; }
 
@@ -158,6 +194,7 @@ header h1 {
     </div>
     <button class="toggle-btn rerun-btn" id="btn-rerun" onclick="rerunOptimization()">Rerun</button>
     <button class="toggle-btn" id="btn-2024" onclick="toggle2024(this)">Show 2024</button>
+    <button class="toggle-btn" onclick="showSummary()">Summary</button>
   </div>
 </header>
 
@@ -623,6 +660,59 @@ async function loadData() {
 }
 
 loadData();
+
+// ── Summary modal ─────────────────────────────────────────────────────────────
+function showSummary() {
+  if (!voterPool || !selected) return;
+
+  const mandatory    = voterPool.filter(s => s.mandatory).sort((a, b) => b.v26 - a.v26);
+  const openNonMand  = selected.slice().sort((a, b) => b.v26 - a.v26);
+  const selectedSet  = new Set(selected);
+  const notSelected  = voterPool
+    .filter(s => !s.mandatory && !selectedSet.has(s) && s.v26 >= MIN_ZAV)
+    .sort((a, b) => b.v26 - a.v26);
+
+  const hdr = `<div class="summary-hdr">
+    <span style="min-width:2ch"></span>
+    <span style="flex:1">Location</span>
+    <span style="min-width:4ch;text-align:right">Зав.</span>
+    <span style="min-width:4ch;text-align:right">2024</span>
+  </div>`;
+
+  const allOpen = [...mandatory, ...openNonMand];
+  let html = `<div class="summary-sub">Open sections (${allOpen.length})</div>${hdr}`;
+  html += allOpen.map((s, i) => `<div class="summary-row">
+    <span class="summary-idx">${i + 1}</span>
+    <span class="summary-name" title="${s.name}">${s.name}</span>
+    ${s.mandatory ? '<span class="summary-emb">emb</span>' : ''}
+    <span class="summary-zav">${s.v26}</span>
+    <span class="summary-v24">${s.v24 || 0}</span>
+  </div>`).join('');
+
+  html += `<div class="summary-sub" style="margin-top:14px">Eligible but not selected (${notSelected.length})</div>${hdr}`;
+  html += notSelected.map((s, i) => `<div class="summary-row">
+    <span class="summary-idx">${i + 1}</span>
+    <span class="summary-name" title="${s.name}">${s.name}</span>
+    <span class="summary-zav">${s.v26}</span>
+    <span class="summary-v24">${s.v24 || 0}</span>
+  </div>`).join('');
+
+  document.getElementById('summary-content').innerHTML = html;
+  document.getElementById('summary-modal').classList.add('open');
+}
+
+function closeSummary() {
+  document.getElementById('summary-modal').classList.remove('open');
+}
 </script>
+
+<div id="summary-modal" onclick="if(event.target===this)closeSummary()">
+  <div id="summary-box">
+    <button class="summary-close" onclick="closeSummary()">✕</button>
+    <div class="summary-heading">Section Summary</div>
+    <div id="summary-content"></div>
+  </div>
+</div>
+
 </body>
 </html>
