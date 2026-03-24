@@ -56,7 +56,7 @@ header h1 {
 .stat-label { color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; }
 .stat-pool   { color: #e8e4d9; }
 .stat-open   { color: #4bc84b; }
-.stat-emb    { color: #c8a84b; }
+.stat-emb    { color: #3d8b5e; }
 .stat-served { color: #4b8ec8; }
 .stat-atrisk { color: #e8913a; }
 .stat-lost   { color: #c84b4b; }
@@ -107,7 +107,7 @@ header h1 {
 .summary-row:last-child { border-bottom: none; }
 .summary-idx  { color: #4a5568; min-width: 2ch; text-align: right; flex-shrink: 0; }
 .summary-name { flex: 1; color: #e8e4d9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.summary-emb  { font-size: 0.5rem; color: #c8a84b; background: #3a2a0a; border: 1px solid #6a5a2a; padding: 1px 4px; border-radius: 2px; flex-shrink: 0; }
+.summary-emb  { font-size: 0.5rem; color: #3d8b5e; background: #0d2a1a; border: 1px solid #2a5a3a; padding: 1px 4px; border-radius: 2px; flex-shrink: 0; }
 .summary-zav  { color: #4bc84b; min-width: 4ch; text-align: right; flex-shrink: 0; }
 .summary-v24  { color: #8a95a8; min-width: 4ch; text-align: right; flex-shrink: 0; }
 
@@ -125,7 +125,7 @@ header h1 {
 .popup-sub   { font-size: 0.62rem; color: #8a95a8; margin-top: 3px; }
 .popup-badge { display: inline-block; font-size: 0.58rem; padding: 2px 7px; border-radius: 2px; margin-bottom: 5px; }
 .badge-open      { background: #1a3a1a; color: #4bc84b; border: 1px solid #2a6a2a; }
-.badge-mandatory { background: #3a2a0a; color: #c8a84b; border: 1px solid #6a5a2a; }
+.badge-mandatory { background: #0d2a1a; color: #3d8b5e; border: 1px solid #2a5a3a; }
 .badge-served    { background: #0e1a2a; color: #4b8ec8; border: 1px solid #2a4a6a; }
 .badge-atrisk    { background: #2a1a08; color: #e8913a; border: 1px solid #6a4010; }
 .badge-lost      { background: #3a1a1a; color: #c84b4b; border: 1px solid #6a2a2a; }
@@ -146,7 +146,7 @@ header h1 {
   <div class="header-right">
     <div class="legend">
       <div class="legend-item"><div class="leg-dot" style="background:#4bc84b"></div>Open</div>
-      <div class="legend-item"><div class="leg-dot" style="background:#c8a84b"></div>Embassy</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#3d8b5e"></div>Embassy / Consulate</div>
       <div class="legend-item"><div class="leg-dot" style="background:#4b8ec8"></div>Served (≤60 mi)</div>
       <div class="legend-item"><div class="leg-dot" style="background:#e8913a"></div>Far (60–100 mi)</div>
       <div class="legend-item"><div class="leg-dot" style="background:#c84b4b"></div>Disenfranchised (&gt;100 mi)</div>
@@ -194,7 +194,7 @@ const SERVED_MI = 60;
 const FAR_MI    = 100;
 
 const STATUS_COLOR = {
-  mandatory: '#c8a84b',
+  mandatory: '#3d8b5e',
   open:      '#4bc84b',
   served:    '#4b8ec8',
   atrisk:    '#e8913a',
