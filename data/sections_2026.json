@@ -1,152 +1,159 @@
 {
-  "updated": "2026-03-24T14:26:14.767469+00:00",
-  "total": 3769,
+  "updated": "2026-03-25T13:54:44.102481+00:00",
+  "total": 3987,
   "stations": [
     {
       "name": "Boston",
       "lat": 42.3579,
       "lng": -71.1843,
       "mandatory": false,
-      "voters": 289
+      "voters": 305
     },
     {
       "name": "Дес Плейнс, Център \"Малката България\"",
       "lat": 42.036,
       "lng": -87.895,
       "mandatory": false,
-      "voters": 262
+      "voters": 294
     },
     {
       "name": "Дес Плейнс ,МАГАЗИН МАЛИНЧО,Илинойс,САЩ",
       "lat": 42.0266,
       "lng": -87.8935,
       "mandatory": false,
-      "voters": 184
+      "voters": 198
     },
     {
       "name": "Маунт Проспект, Илинойс - Културен център \"Българика\"",
       "lat": 42.0445,
       "lng": -87.942,
       "mandatory": false,
-      "voters": 174
+      "voters": 182
     },
     {
       "name": "Saint Petersburg ABRITUS MINI MARKET, Saint Petersburg Florida",
       "lat": 27.8569,
       "lng": -82.6493,
       "mandatory": false,
-      "voters": 150
+      "voters": 151
     },
     {
       "name": "Културен център \"Магура\" Шамбург / Schaumburg, Chicago, Illinois",
       "lat": 42.0516,
       "lng": -88.0497,
       "mandatory": false,
-      "voters": 123
+      "voters": 136
     },
     {
       "name": "Marietta, GA - MALINCHO Fresh Market, Atlanta, GA",
       "lat": 33.916,
       "lng": -84.4673,
       "mandatory": false,
-      "voters": 118
+      "voters": 124
     },
     {
       "name": "Маями, Флорида, Форт Лотърдейл",
       "lat": 26.1697,
       "lng": -80.0996,
       "mandatory": false,
-      "voters": 115
-    },
-    {
-      "name": "Сиатъл",
-      "lat": 47.7949,
-      "lng": -122.3737,
-      "mandatory": false,
-      "voters": 114
+      "voters": 120
     },
     {
       "name": "Минеаполис, Минесота",
       "lat": 44.9228,
       "lng": -92.9696,
       "mandatory": false,
-      "voters": 108
+      "voters": 119
     },
     {
-      "name": "Вашингтон (Посолство)",
-      "lat": 38.9124,
-      "lng": -77.0485,
-      "mandatory": true,
-      "voters": 105
+      "name": "Сиатъл",
+      "lat": 47.7949,
+      "lng": -122.3737,
+      "mandatory": false,
+      "voters": 116
     },
     {
       "name": "Ню Йорк (Генерално консулство)",
       "lat": 40.7646,
       "lng": -73.9675,
       "mandatory": true,
-      "voters": 103
+      "voters": 115
     },
     {
-      "name": "Шарлът-Матюс, Шарлът-Матюс",
-      "lat": 35.1448,
-      "lng": -80.719,
-      "mandatory": false,
-      "voters": 101
+      "name": "Вашингтон (Посолство)",
+      "lat": 38.9124,
+      "lng": -77.0485,
+      "mandatory": true,
+      "voters": 112
     },
     {
       "name": "Las Vegas, Nevada, Restaurant BESO",
       "lat": 36.1084,
       "lng": -115.2616,
       "mandatory": false,
-      "voters": 100
+      "voters": 106
+    },
+    {
+      "name": "Шарлът-Матюс, Шарлът-Матюс",
+      "lat": 35.1448,
+      "lng": -80.719,
+      "mandatory": false,
+      "voters": 106
     },
     {
       "name": "Синсинати, Охайо",
       "lat": 39.1839,
       "lng": -84.4235,
       "mandatory": false,
-      "voters": 97
-    },
-    {
-      "name": "Денвър",
-      "lat": 39.6913,
-      "lng": -104.94,
-      "mandatory": false,
-      "voters": 85
+      "voters": 103
     },
     {
       "name": "Билирика, 310 River St, Billerica, MA USA",
       "lat": 42.5612,
       "lng": -71.2961,
       "mandatory": false,
-      "voters": 84
+      "voters": 98
     },
     {
-      "name": "Питсбърг, Пенсилвания",
-      "lat": 40.4018,
-      "lng": -79.9178,
+      "name": "Денвър",
+      "lat": 39.6913,
+      "lng": -104.94,
       "mandatory": false,
-      "voters": 80
+      "voters": 87
     },
     {
       "name": "Sunnyvale",
       "lat": 37.3499,
       "lng": -122.0576,
       "mandatory": false,
-      "voters": 78
+      "voters": 87
     },
     {
       "name": "Алфа Арт галерия Ню Бронсуик, Ню Джърси",
       "lat": 40.4958,
       "lng": -74.4447,
       "mandatory": false,
-      "voters": 77
+      "voters": 82
+    },
+    {
+      "name": "Питсбърг, Пенсилвания",
+      "lat": 40.4018,
+      "lng": -79.9178,
+      "mandatory": false,
+      "voters": 81
     },
     {
       "name": "Далас, Тексас, Далас, Тексас",
       "lat": 32.9278,
       "lng": -96.8967,
       "mandatory": false,
+      "voters": 79
+    },
+    {
+      "name": "Лос Анджелис (Генерално консулство)",
+      "lat": 34.0479,
+      "lng": -118.462,
+      "mandatory": true,
       "voters": 77
     },
     {
@@ -154,49 +161,56 @@
       "lat": 32.8976,
       "lng": -117.1246,
       "mandatory": false,
-      "voters": 70
+      "voters": 71
     },
     {
       "name": "Broomall, Pa, Euro Market",
       "lat": 39.981,
       "lng": -75.3617,
       "mandatory": false,
-      "voters": 69
-    },
-    {
-      "name": "Мартинез Св.св.Кирил и Методи Българската църква, Мартинез,Калифирния, Съединени американски щати",
-      "lat": 38.0143,
-      "lng": -122.1181,
-      "mandatory": false,
-      "voters": 67
-    },
-    {
-      "name": "Финикс, Аризона",
-      "lat": 33.4873,
-      "lng": -112.027,
-      "mandatory": false,
-      "voters": 66
+      "voters": 70
     },
     {
       "name": "Хюстън, Тексас",
       "lat": 29.766,
       "lng": -95.3777,
       "mandatory": false,
-      "voters": 65
+      "voters": 70
     },
     {
-      "name": "Лос Анджелис (Генерално консулство)",
-      "lat": 34.0479,
-      "lng": -118.462,
-      "mandatory": true,
-      "voters": 63
+      "name": "Мартинез Св.св.Кирил и Методи Българската църква, Мартинез,Калифирния, Съединени американски щати",
+      "lat": 38.0143,
+      "lng": -122.1181,
+      "mandatory": false,
+      "voters": 68
+    },
+    {
+      "name": "Финикс, Аризона",
+      "lat": 33.4873,
+      "lng": -112.027,
+      "mandatory": false,
+      "voters": 68
     },
     {
       "name": "Сакраменто, Сакраменто, Калифорния",
       "lat": 38.5884,
       "lng": -121.4195,
       "mandatory": false,
-      "voters": 54
+      "voters": 55
+    },
+    {
+      "name": "Норуолк",
+      "lat": 41.1403,
+      "lng": -73.2848,
+      "mandatory": false,
+      "voters": 53
+    },
+    {
+      "name": "Сейнт Луис , Мисури",
+      "lat": 38.6009,
+      "lng": -90.5863,
+      "mandatory": false,
+      "voters": 53
     },
     {
       "name": "Хаянис - Кейп Код",
@@ -213,32 +227,18 @@
       "voters": 52
     },
     {
-      "name": "Норуолк",
-      "lat": 41.1403,
-      "lng": -73.2848,
-      "mandatory": false,
-      "voters": 51
-    },
-    {
-      "name": "Сейнт Луис , Мисури",
-      "lat": 38.6009,
-      "lng": -90.5863,
-      "mandatory": false,
-      "voters": 51
-    },
-    {
       "name": "San Francisco, CA",
       "lat": 37.7623,
       "lng": -122.4713,
       "mandatory": false,
-      "voters": 49
+      "voters": 51
     },
     {
       "name": "Нейпълс, Флорида / Naples, FL",
       "lat": 26.2093,
       "lng": -81.8016,
       "mandatory": false,
-      "voters": 49
+      "voters": 50
     },
     {
       "name": "Нашвил, Тенеси",
@@ -252,7 +252,7 @@
       "lat": 37.6151,
       "lng": -77.4919,
       "mandatory": false,
-      "voters": 44
+      "voters": 45
     },
     {
       "name": "Остин, Тексас",
@@ -276,6 +276,13 @@
       "voters": 24
     },
     {
+      "name": "Вирджиния Бийч, Вирджиния",
+      "lat": 36.845,
+      "lng": -75.9921,
+      "mandatory": false,
+      "voters": 23
+    },
+    {
       "name": "Нантакет МА, САЩ",
       "lat": 41.2855,
       "lng": -70.1013,
@@ -283,25 +290,18 @@
       "voters": 22
     },
     {
-      "name": "Вирджиния Бийч, Вирджиния",
-      "lat": 36.845,
-      "lng": -75.9921,
-      "mandatory": false,
-      "voters": 21
-    },
-    {
       "name": "Чикаго (Генерално консулство)",
       "lat": 41.896,
       "lng": -87.6238,
       "mandatory": true,
-      "voters": 19
+      "voters": 20
     },
     {
       "name": "Ървайн/Тъстин, Калифорния",
       "lat": 33.7211,
       "lng": -117.8066,
       "mandatory": false,
-      "voters": 18
+      "voters": 19
     },
     {
       "name": "Портланд, Орегон",
@@ -336,14 +336,21 @@
       "lat": 39.7872,
       "lng": -86.2095,
       "mandatory": false,
-      "voters": 10
+      "voters": 12
     },
     {
       "name": "Newark, Delaware",
       "lat": 39.6837,
       "lng": -75.7497,
       "mandatory": false,
-      "voters": 9
+      "voters": 10
+    },
+    {
+      "name": "Бъфало Ню Йорк",
+      "lat": 43.017,
+      "lng": -78.8824,
+      "mandatory": false,
+      "voters": 8
     },
     {
       "name": "Хинсдейл",
@@ -351,13 +358,6 @@
       "lng": -87.936,
       "mandatory": false,
       "voters": 8
-    },
-    {
-      "name": "Бъфало Ню Йорк",
-      "lat": 43.017,
-      "lng": -78.8824,
-      "mandatory": false,
-      "voters": 7
     },
     {
       "name": "Детройт",
