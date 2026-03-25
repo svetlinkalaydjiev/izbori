@@ -121,6 +121,7 @@ UNMATCHED_COORDS = {
     "Roanoke, VA":       {"name": "Roanoke VA",        "lat": 37.2710, "lng": -79.9414},
     "Сиракюз, Ню Йорк":  {"name": "Syracuse NY",       "lat": 43.0481, "lng": -76.1474},
     "Чарлстън, Южна Каролина": {"name": "Charleston SC", "lat": 32.7765, "lng": -79.9311},
+    "Tustin, California":      {"name": "Tustin CA",      "lat": 33.7458, "lng": -117.8260},
 }
 
 

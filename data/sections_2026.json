@@ -1,6 +1,6 @@
 {
-  "updated": "2026-03-25T13:54:44.102481+00:00",
-  "total": 3987,
+  "updated": "2026-03-25T13:57:32.286520+00:00",
+  "total": 3988,
   "stations": [
     {
       "name": "Boston",
@@ -405,6 +405,13 @@
       "name": "Roanoke, VA",
       "lat": 37.271,
       "lng": -79.9414,
+      "mandatory": false,
+      "voters": 1
+    },
+    {
+      "name": "Tustin, California",
+      "lat": 33.7458,
+      "lng": -117.826,
       "mandatory": false,
       "voters": 1
     }
