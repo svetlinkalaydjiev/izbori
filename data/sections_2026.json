@@ -1,5 +1,5 @@
 {
-  "updated": "2026-03-25T13:57:32.286520+00:00",
+  "updated": "2026-03-25T14:05:24.140916+00:00",
   "total": 3988,
   "stations": [
     {
@@ -290,18 +290,18 @@
       "voters": 22
     },
     {
+      "name": "Ървайн/Тъстин, Калифорния",
+      "lat": 33.7211,
+      "lng": -117.8066,
+      "mandatory": false,
+      "voters": 20
+    },
+    {
       "name": "Чикаго (Генерално консулство)",
       "lat": 41.896,
       "lng": -87.6238,
       "mandatory": true,
       "voters": 20
-    },
-    {
-      "name": "Ървайн/Тъстин, Калифорния",
-      "lat": 33.7211,
-      "lng": -117.8066,
-      "mandatory": false,
-      "voters": 19
     },
     {
       "name": "Портланд, Орегон",
@@ -405,13 +405,6 @@
       "name": "Roanoke, VA",
       "lat": 37.271,
       "lng": -79.9414,
-      "mandatory": false,
-      "voters": 1
-    },
-    {
-      "name": "Tustin, California",
-      "lat": 33.7458,
-      "lng": -117.826,
       "mandatory": false,
       "voters": 1
     }
