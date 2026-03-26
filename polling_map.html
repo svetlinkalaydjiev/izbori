@@ -148,9 +148,18 @@ header h1 {
 .popup-badge { display: inline-block; font-size: 0.58rem; padding: 2px 7px; border-radius: 2px; margin-bottom: 5px; }
 .badge-open      { background: #1a3a1a; color: #4bc84b; border: 1px solid #2a6a2a; }
 .badge-mandatory { background: #0d2a1a; color: #3d8b5e; border: 1px solid #2a5a3a; }
+.badge-pinned    { background: #1e1a3a; color: #a78bfa; border: 1px solid #5a4a9a; }
 .badge-served    { background: #0e1a2a; color: #4b8ec8; border: 1px solid #2a4a6a; }
 .badge-atrisk    { background: #2a1a08; color: #e8913a; border: 1px solid #6a4010; }
 .badge-lost      { background: #3a1a1a; color: #c84b4b; border: 1px solid #6a2a2a; }
+.pin-btn {
+  margin-top: 8px; width: 100%; padding: 4px 0;
+  background: #1e1a3a; border: 1px solid #5a4a9a; color: #a78bfa;
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem;
+  text-transform: uppercase; letter-spacing: 0.07em; cursor: pointer; border-radius: 2px;
+}
+.pin-btn:hover { background: #2a2050; }
+.pin-btn.unpin { background: #2a1a3a; border-color: #7a3a9a; color: #c87afa; }
 
 .leaflet-control-attribution {
   background: #161920cc !important; color: #6b7280 !important; font-size: 10px !important;
@@ -168,6 +177,7 @@ header h1 {
   <div class="header-right">
     <div class="legend">
       <div class="legend-item"><div class="leg-dot" style="background:#4bc84b"></div>Open (optimal 20)</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#a78bfa"></div>Pinned (manual)</div>
       <div class="legend-item"><div class="leg-dot" style="background:#3d8b5e"></div>Embassy / Consulate</div>
       <div class="legend-item"><div class="leg-dot" style="background:#4b8ec8"></div>Served</div>
       <div class="legend-item"><div class="leg-dot" style="background:#e8913a"></div>Far</div>
@@ -191,6 +201,7 @@ header h1 {
       </div>
     </div>
     <button class="toggle-btn rerun-btn" id="btn-rerun" onclick="rerunOptimization()">Rerun</button>
+    <button class="toggle-btn" id="btn-clear-pins" onclick="clearPins()" style="display:none">Clear pins</button>
     <button class="toggle-btn" onclick="showSummary()">Summary</button>
     <a href="polling_map_static.html" class="toggle-btn" style="text-decoration:none">към модел 2 →</a>
   </div>
@@ -252,6 +263,7 @@ let maxCapacity = 900;   // max voters served at a single open location
 let voterPool = null;  // all locations with combined voter counts
 let selected  = null;  // the 20 optimally chosen station objects
 let maxV26    = 1;
+const pinned  = new Set(); // user-pinned stations (always forced open)
 
 // ── Map setup ─────────────────────────────────────────────────────────────────
 const map = L.map('map', { center: [38.5, -96], zoom: 4 });
@@ -314,49 +326,45 @@ function buildVoterPool(s26, s24) {
 }
 
 // ── Optimization: greedy construction + local-search swap improvement ─────────
-// Returns array of TOP_N station objects from pool (non-mandatory, v26 ≥ MIN_ZAV)
-// that maximise sum of uniqueVoters × travelProb(distToNearestOpen) across all pool locations.
-function optimizeSelections(pool) {
-  const mandatory = pool.filter(s => s.mandatory);
-  const eligible  = pool.filter(s => !s.mandatory && s.v26 >= MIN_ZAV);
-  const n = Math.min(TOP_N, eligible.length);
+// pinnedSet: Set of pool objects the user has manually forced open.
+// These always count as open; algorithm fills remaining TOP_N - pinnedSet.size slots.
+function optimizeSelections(pool, pinnedSet = new Set()) {
+  const mandatory  = pool.filter(s => s.mandatory);
+  // Forced-open base = mandatory embassies + user-pinned
+  const forcedOpen = [...mandatory, ...[...pinnedSet]];
+  const nF         = forcedOpen.length;
+  // Eligible = non-mandatory, not pinned, meets minimum threshold
+  const eligible   = pool.filter(s => !s.mandatory && !pinnedSet.has(s) && s.v26 >= MIN_ZAV);
+  const slotsLeft  = Math.max(0, TOP_N - pinnedSet.size);
+  const n          = Math.min(slotsLeft, eligible.length);
   if (n === 0) return [];
 
-  // Precompute distance matrices to avoid repeated trig in the inner loop
-  // distME[i][j] = dist from pool[i] to eligible[j]
-  // distMM[i][k] = dist from pool[i] to mandatory[k]
+  // Precompute distance matrices
   const distME = pool.map(loc => eligible.map(e => distMiles(loc, e)));
-  const distMM = pool.map(loc => mandatory.map(m => distMiles(loc, m)));
-  const nM = mandatory.length;
+  const distMF = pool.map(loc => forcedOpen.map(f => distMiles(loc, f)));
 
-  // Score a selection expressed as index array into eligible[].
-  // Assigns each pool location's expected arrivals to its nearest open station,
-  // then caps each station's total at maxCapacity.
   function score(selIdxs) {
-    const nS = selIdxs.length;
-    const buckets = new Float64Array(nM + nS); // mandatory first, then selected
-
+    const nS      = selIdxs.length;
+    const buckets = new Float64Array(nF + nS);
     for (let i = 0; i < pool.length; i++) {
       let minD = Infinity, bestB = 0;
-      for (let k = 0; k < nM; k++) {
-        if (distMM[i][k] < minD) { minD = distMM[i][k]; bestB = k; }
+      for (let k = 0; k < nF; k++) {
+        if (distMF[i][k] < minD) { minD = distMF[i][k]; bestB = k; }
       }
       for (let s = 0; s < nS; s++) {
         const d = distME[i][selIdxs[s]];
-        if (d < minD) { minD = d; bestB = nM + s; }
+        if (d < minD) { minD = d; bestB = nF + s; }
       }
       buckets[bestB] += pool[i].uniqueVoters * travelProb(minD);
     }
-
     let total = 0;
     for (let b = 0; b < buckets.length; b++) total += Math.min(buckets[b], maxCapacity);
     return total;
   }
 
-  // Phase 1: greedy — iteratively pick the candidate with highest marginal gain
+  // Phase 1: greedy
   const selIdxs   = [];
   const unselIdxs = eligible.map((_, j) => j);
-
   for (let iter = 0; iter < n; iter++) {
     let bestScore = -Infinity, bestPos = 0;
     for (let pos = 0; pos < unselIdxs.length; pos++) {
@@ -366,7 +374,7 @@ function optimizeSelections(pool) {
     selIdxs.push(unselIdxs.splice(bestPos, 1)[0]);
   }
 
-  // Phase 2: local search — try all 1-for-1 swaps until no improvement
+  // Phase 2: local-search swaps
   let improved = true;
   while (improved) {
     improved = false;
@@ -388,11 +396,13 @@ function optimizeSelections(pool) {
 }
 
 // ── Compute display status for each pool location ─────────────────────────────
-function computeStatuses(pool, sel) {
-  const openSet = [...pool.filter(s => s.mandatory), ...sel];
+function computeStatuses(pool, sel, pinnedSet = new Set()) {
+  const mandatory = pool.filter(s => s.mandatory);
+  const openSet   = [...mandatory, ...[...pinnedSet], ...sel];
   return pool.map(s => {
-    if (s.mandatory)     return { ...s, status: 'mandatory', nearestOpen: s };
-    if (sel.includes(s)) return { ...s, status: 'open',      nearestOpen: s };
+    if (s.mandatory)       return { ...s, status: 'mandatory', nearestOpen: s };
+    if (pinnedSet.has(s))  return { ...s, status: 'pinned',    nearestOpen: s };
+    if (sel.includes(s))   return { ...s, status: 'open',      nearestOpen: s };
 
     let minD = Infinity, nearStation = null, nearName = '';
     for (const o of openSet) {
@@ -410,13 +420,14 @@ function computeStatuses(pool, sel) {
 const STATUS_COLOR = {
   mandatory: '#3d8b5e',
   open:      '#4bc84b',
+  pinned:    '#a78bfa',
   served:    '#4b8ec8',
   atrisk:    '#e8913a',
   lost:      '#c84b4b',
 };
 
 function pinIcon(s) {
-  const isOpen = s.status === 'open' || s.status === 'mandatory';
+  const isOpen = s.status === 'open' || s.status === 'mandatory' || s.status === 'pinned';
   // Open pins show expected voters served (capped); closed pins show 2026 заявления
   const label  = isOpen ? (s.cappedTotal ?? s.v26) : s.v26;
   const size   = isOpen ? Math.round(26 + (label / maxCapacity) * 22) : 20;
@@ -439,29 +450,32 @@ function popupHtml(s) {
   const labels = {
     mandatory: 'Embassy / Consulate',
     open:      'Open — Optimal 20',
+    pinned:    'Pinned — Manual',
     served:    'Served',
     atrisk:    'Far — Reachable',
     lost:      'Disenfranchised',
   };
-  const badge = `<span class="popup-badge badge-${s.status}">${labels[s.status]}</span><br>`;
-  const isOpen = s.status === 'open' || s.status === 'mandatory';
+  const badge  = `<span class="popup-badge badge-${s.status}">${labels[s.status]}</span><br>`;
+  const isOpen = s.status === 'open' || s.status === 'mandatory' || s.status === 'pinned';
+
+  // Pin/unpin button (shown on all non-mandatory stations)
+  const pinBtn = s.status === 'mandatory' ? '' : s.status === 'pinned'
+    ? `<button class="pin-btn unpin" onclick="togglePin(${s.lat},${s.lng})">✕ Unpin this section</button>`
+    : `<button class="pin-btn" onclick="togglePin(${s.lat},${s.lng})">📌 Pin this section open</button>`;
 
   if (isOpen && s.contributors) {
-    // ── Open station: expected voters served + contributor breakdown ──────────
+    // ── Open / pinned station: expected voters + contributor breakdown ────────
     const overCap = s.rawTotal > maxCapacity;
     let body = `<div class="popup-count">${s.cappedTotal.toLocaleString()}<span>expected voters</span></div>`;
     body += overCap
       ? `<div class="popup-sub" style="color:#e8913a">Over capacity — capped from ${s.rawTotal.toLocaleString()}</div>`
       : `<div class="popup-sub">${s.rawTotal.toLocaleString()} expected · ${maxCapacity} capacity</div>`;
-    // Raw registration / historical figures — same fields shown on closed-station popups
     if (s.v26 > 0 || s.v24 > 0) {
       const parts = [];
       if (s.v26 > 0) parts.push(`${s.v26} заявления 2026`);
       if (s.v24 > 0) parts.push(`${s.v24} voters in 2024`);
       body += `<div class="popup-sub">${parts.join(' · ')}</div>`;
     }
-
-    // Contributor table (scrollable)
     body += `<div style="margin-top:7px;max-height:190px;overflow-y:auto;">
       <div style="display:flex;justify-content:space-between;font-size:0.55rem;color:#4a5568;
         text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #2a2f3d;
@@ -481,11 +495,11 @@ function popupHtml(s) {
         </span>
       </div>`;
     }
-    body += `</div>`;
+    body += `</div>${pinBtn}`;
     return `<div style="min-width:260px"><div class="popup-name">${s.name}</div>${badge}${body}</div>`;
   }
 
-  // ── Closed station: original display ─────────────────────────────────────
+  // ── Closed station ────────────────────────────────────────────────────────
   let body = `<div class="popup-count">${s.v26}<span>2026 заявления</span></div>`;
   if (s.v24 > 0) body += `<div class="popup-sub">${s.v24} voters in 2024</div>`;
   body += `<div class="popup-sub">Est. unique pool: ${s.uniqueVoters.toLocaleString()}</div>`;
@@ -493,6 +507,7 @@ function popupHtml(s) {
     const prob = Math.round(travelProb(s.nearestDistRaw) * 100);
     body += `<div class="popup-sub" style="margin-top:5px">Nearest open: ${s.nearestName}<br>${s.nearestDist} mi — ${prob}% travel probability</div>`;
   }
+  body += pinBtn;
   return `<div style="min-width:180px"><div class="popup-name">${s.name}</div>${badge}${body}</div>`;
 }
 
@@ -500,16 +515,18 @@ function popupHtml(s) {
 function render2026() {
   if (!voterPool || !selected) return;
   layer2026.clearLayers();
-  const statused = computeStatuses(voterPool, selected);
+  const statused = computeStatuses(voterPool, selected, pinned);
 
   // Build per-station assignment map: original pool object → contributor list + totals
-  const openOriginals = [...voterPool.filter(s => s.mandatory), ...selected];
+  const openOriginals = [...voterPool.filter(s => s.mandatory), ...[...pinned], ...selected];
   const stationData   = new Map(openOriginals.map(o => [o, { rawTotal: 0, contributors: [] }]));
+
+  const isOpenStatus = st => st === 'open' || st === 'mandatory' || st === 'pinned';
 
   statused.forEach(s => {
     const bucket = stationData.get(s.nearestOpen);
     if (!bucket) return;
-    const dist  = (s.status === 'open' || s.status === 'mandatory') ? 0 : s.nearestDistRaw;
+    const dist  = isOpenStatus(s.status) ? 0 : s.nearestDistRaw;
     const prob  = travelProb(dist);
     const exp   = s.uniqueVoters * prob;
     bucket.rawTotal += exp;
@@ -517,14 +534,14 @@ function render2026() {
       bucket.contributors.push({
         name: s.name, dist: Math.round(dist), prob: Math.round(prob * 100),
         v26: s.v26, v24: s.v24, uniqueVoters: s.uniqueVoters, expected: Math.round(exp),
-        isSelf: s.status === 'open' || s.status === 'mandatory',
+        isSelf: isOpenStatus(s.status),
       });
     }
   });
 
-  // Cap, sort, and annotate statused open/mandatory entries in-place
+  // Cap, sort, and annotate statused open/pinned/mandatory entries in-place
   statused.forEach(s => {
-    if (s.status !== 'open' && s.status !== 'mandatory') return;
+    if (!isOpenStatus(s.status)) return;
     const bucket = stationData.get(s.nearestOpen);
     if (!bucket) return;
     s.cappedTotal  = Math.min(Math.round(bucket.rawTotal), maxCapacity);
@@ -532,15 +549,16 @@ function render2026() {
     s.contributors = bucket.contributors.sort((a, b) => b.expected - a.expected);
   });
 
-  let nOpen = 0, nEmb = 0;
+  let nOpen = 0, nPinned = 0, nEmb = 0;
   let uServed = 0, uAtrisk = 0, uLost = 0;
   const totalPool = voterPool.reduce((a, s) => a + s.uniqueVoters, 0);
 
   statused.forEach(s => {
     if (s.status === 'open')      nOpen++;
+    if (s.status === 'pinned')    nPinned++;
     if (s.status === 'mandatory') nEmb++;
 
-    const atOpen = s.status === 'open' || s.status === 'mandatory';
+    const atOpen = isOpenStatus(s.status);
     if (atOpen || s.status === 'served') uServed += s.uniqueVoters;
     else if (s.status === 'atrisk')      uAtrisk += s.uniqueVoters;
     else                                  uLost   += s.uniqueVoters;
@@ -558,7 +576,7 @@ function render2026() {
   const fmt = n => Math.round(n).toLocaleString();
   const pct = n => ` (${Math.round(n / totalPool * 100)}%)`;
   document.getElementById('st-pool').textContent     = fmt(totalPool);
-  document.getElementById('st-open').textContent     = nOpen;
+  document.getElementById('st-open').textContent     = nPinned > 0 ? `${nOpen} + ${nPinned} pinned` : nOpen;
   document.getElementById('st-emb').textContent      = nEmb;
   document.getElementById('st-served').textContent   = fmt(uServed)   + pct(uServed);
   document.getElementById('st-atrisk').textContent   = fmt(uAtrisk)   + pct(uAtrisk);
@@ -585,13 +603,30 @@ function onCapSlider(val) {
   render2026(); // updates stats immediately; click Rerun to re-optimise selection
 }
 
+function togglePin(lat, lng) {
+  const loc = voterPool && voterPool.find(s => s.lat === lat && s.lng === lng);
+  if (!loc || loc.mandatory) return;
+  if (pinned.has(loc)) pinned.delete(loc); else pinned.add(loc);
+  document.getElementById('btn-clear-pins').style.display = pinned.size ? '' : 'none';
+  map.closePopup();
+  selected = optimizeSelections(voterPool, pinned);
+  render2026();
+}
+
+function clearPins() {
+  pinned.clear();
+  document.getElementById('btn-clear-pins').style.display = 'none';
+  selected = optimizeSelections(voterPool, pinned);
+  render2026();
+}
+
 function rerunOptimization() {
   if (!voterPool) return;
   const btn = document.getElementById('btn-rerun');
   btn.textContent = 'Running…';
   btn.disabled = true;
   setTimeout(() => {
-    selected = optimizeSelections(voterPool);
+    selected = optimizeSelections(voterPool, pinned);
     render2026();
     btn.textContent = 'Rerun';
     btn.disabled = false;
@@ -617,7 +652,7 @@ async function loadData() {
     document.getElementById('subtitle').textContent =
       `2026: ${d26.total.toLocaleString()} заявления · ${d26.stations.length} locations`;
 
-    selected = optimizeSelections(voterPool);
+    selected = optimizeSelections(voterPool, pinned);
     render2026();
 
   } catch (err) {
@@ -632,11 +667,13 @@ loadData();
 function showSummary() {
   if (!voterPool || !selected) return;
 
-  const mandatory    = voterPool.filter(s => s.mandatory).sort((a, b) => b.v26 - a.v26);
-  const openNonMand  = selected.slice().sort((a, b) => b.v26 - a.v26);
-  const selectedSet  = new Set(selected);
-  const notSelected  = voterPool
-    .filter(s => !s.mandatory && !selectedSet.has(s) && s.v26 >= MIN_ZAV)
+  const mandatory   = voterPool.filter(s => s.mandatory).sort((a, b) => b.v26 - a.v26);
+  const pinnedList  = [...pinned].sort((a, b) => b.v26 - a.v26);
+  const openNonMand = selected.slice().sort((a, b) => b.v26 - a.v26);
+  // Exclude mandatory, pinned, and algorithm-selected from the "not selected" list
+  const openSet     = new Set([...selected, ...pinned]);
+  const notSelected = voterPool
+    .filter(s => !s.mandatory && !openSet.has(s) && s.v26 >= MIN_ZAV)
     .sort((a, b) => b.v26 - a.v26);
 
   const hdr = `<div class="summary-hdr">
@@ -646,12 +683,14 @@ function showSummary() {
     <span style="min-width:4ch;text-align:right">2024</span>
   </div>`;
 
-  const allOpen = [...mandatory, ...openNonMand];
+  const allOpen = [...mandatory, ...pinnedList, ...openNonMand];
   let html = `<div class="summary-sub">Open sections (${allOpen.length})</div>${hdr}`;
   html += allOpen.map((s, i) => `<div class="summary-row">
     <span class="summary-idx">${i + 1}</span>
     <span class="summary-name" title="${s.name}">${s.name}</span>
-    ${s.mandatory ? '<span class="summary-emb">emb</span>' : ''}
+    ${s.mandatory ? '<span class="summary-emb">emb</span>'
+      : pinned.has(s) ? '<span class="summary-emb" style="color:#a78bfa;background:#1e1a3a;border-color:#5a4a9a">pin</span>'
+      : ''}
     <span class="summary-zav">${s.v26}</span>
     <span class="summary-v24">${s.v24 || 0}</span>
   </div>`).join('');
