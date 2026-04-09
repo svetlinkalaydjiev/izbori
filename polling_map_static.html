@@ -84,7 +84,7 @@ header h1 {
 #summary-modal.open { display: flex; }
 #summary-box {
   background: #161920; border: 1px solid #2a2f3d;
-  padding: 16px 20px; max-width: 620px; width: 92%;
+  padding: 16px 20px; max-width: 680px; width: 92%;
   max-height: 82vh; overflow-y: auto; position: relative;
 }
 .summary-close {
@@ -110,6 +110,7 @@ header h1 {
 .summary-emb  { font-size: 0.5rem; color: #3d8b5e; background: #0d2a1a; border: 1px solid #2a5a3a; padding: 1px 4px; border-radius: 2px; flex-shrink: 0; }
 .summary-zav  { color: #4bc84b; min-width: 4ch; text-align: right; flex-shrink: 0; }
 .summary-v24  { color: #8a95a8; min-width: 4ch; text-align: right; flex-shrink: 0; }
+.summary-exp  { color: #a78bfa; min-width: 5ch; text-align: right; flex-shrink: 0; }
 
 /* ── Popups ── */
 .leaflet-popup-content-wrapper {
@@ -363,6 +364,13 @@ function showSummary() {
   const MIN_ZAV = 40;
   const sections = rawData.sections_27102024;
 
+  // Build expected-voters-per-open-station map using redirect_to → Short_Address
+  const expByAddr = {};
+  sections.forEach(s => {
+    const key = s.remains === 1 ? s.Short_Address : s.redirect_to;
+    if (key) expByAddr[key] = (expByAddr[key] || 0) + (s.Count || 0);
+  });
+
   const openMand    = sections.filter(s => s.remains === 1 &&  s.Посолство_Консулство).sort((a, b) => b.Заявления - a.Заявления);
   const openNonMand = sections.filter(s => s.remains === 1 && !s.Посолство_Консулство).sort((a, b) => b.Заявления - a.Заявления);
   const notSelected = sections.filter(s => s.remains === 0 && (s.Заявления || 0) >= MIN_ZAV).sort((a, b) => b.Заявления - a.Заявления);
@@ -372,6 +380,7 @@ function showSummary() {
     <span style="flex:1">Location</span>
     <span style="min-width:4ch;text-align:right">Зав.</span>
     <span style="min-width:4ch;text-align:right">2024</span>
+    <span style="min-width:5ch;text-align:right">Exp.</span>
   </div>`;
 
   const allOpen = [...openMand, ...openNonMand];
@@ -382,6 +391,7 @@ function showSummary() {
     ${s.Посолство_Консулство ? '<span class="summary-emb">emb</span>' : ''}
     <span class="summary-zav">${s.Заявления || 0}</span>
     <span class="summary-v24">${s.Общо_27_10_2024 || 0}</span>
+    <span class="summary-exp">${expByAddr[s.Short_Address] || '—'}</span>
   </div>`).join('');
 
   html += `<div class="summary-sub" style="margin-top:14px">Eligible but not selected (${notSelected.length})</div>${hdr}`;
@@ -390,6 +400,7 @@ function showSummary() {
     <span class="summary-name" title="${s.Секция}">${s.Секция}</span>
     <span class="summary-zav">${s.Заявления || 0}</span>
     <span class="summary-v24">${s.Общо_27_10_2024 || 0}</span>
+    <span class="summary-exp" style="color:#4a5568">—</span>
   </div>`).join('');
 
   document.getElementById('summary-content').innerHTML = html;
